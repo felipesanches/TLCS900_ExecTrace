@@ -76,196 +76,1313 @@ def getVariableName(value):
     if value in SPECIAL_PURPOSE_VARS.keys():
         return SPECIAL_PURPOSE_VARS[value]
     else:
-        return "0x%04X" % value
-
-FOO_instructions = [
-    "ADC", "ADD", "AND", "ANDCF", "BIT", "BS1B",
-    "BS1F", "CALL", "CALR", "CCF", "CHG", "CP",
-    "CPD", "CPDW", "CPDR", "CPDRW", "CPI", "CPIR",
-    "CPIRW", "CPIW", "CPL", "DAA", "DB", "DEC",
-    "DECF", "DECW", "DIV", "DIVS", "DJNZ", "EI",
-    "EX", "EXTS", "EXTZ", "HALT", "INC", "INCF",
-    "INCW", "JP", "JR", "JRL", "LD", "LDA",
-    "LDC", "LDCF", "LDD", "LDDR", "LDDRW", "LDDW",
-    "LDF", "LDI", "LDIR", "LDIRW", "LDIW", "LDW",
-    "LDX", "LINK", "MAX", "MDEC1", "MDEC2", "MDEC4",
-    "MINC1", "MINC2", "MINC4", "MIRR", "MUL", "MULA",
-    "MULS", "NEG", "NOP", "NORMAL", "OR", "ORCF",
-    "PAA", "POP", "POPW", "PUSH", "PUSHW", "RCF",
-    "RES", "RET", "RETD", "RETI", "RL", "RLC",
-    "RLCW", "RLD", "RLW", "RR", "RRC", "RRCW",
-    "RRD", "RRW", "SBC", "SCC", "SCF", "SET",
-    "SLA", "SLAW", "SLL", "SLLW", "SRA", "SRAW",
-    "SRL", "SRLW", "STCF", "SUB", "SWI", "TSET",
-    "UNLK", "XOR", "XORCF", "ZCF",
-    "M_80", "M_88", "M_90", "M_98", "M_A0", "M_A8", "M_B0", "M_B8",
-    "M_C0", "oC8", "M_D0", "oD8", "M_E0", "M_E8", "M_F0"
-]
+        return "0x%06X" % value
 
 instructions = [
-	# 00 - 1F
-	["NOP", None, None], ["NORMAL", None, None], ["PUSH", "O_SR", None], ["POP", "O_SR", None],
-	["MAX", None, None], ["HALT", None, None], ["EI", "O_I8", None], ["RETI", None, None],
-	["LD", "O_M8", "O_I8"], ["PUSH", "O_I8", None], ["LD", "O_M8", "O_I16"], ["PUSH", "O_I16", None],
-	["INCF", None, None], ["DECF", None, None], ["RET", None, None], ["RETD", "O_I16", None],
-	["RCF", None, None], ["SCF", None, None], ["CCF", None, None], ["ZCF", None, None],
-	["PUSH", "O_A", None], ["POP", "O_A", None], ["EX", "O_F", "O_F"], ["LDF", "O_I8", None],
-	["PUSH", "O_F", None], ["POP", "O_F", None], ["JP", "O_I16", None], ["JP", "O_I24", None],
-	["CALL", "O_I16", None], ["CALL", "O_I24", None], ["CALR", "O_D16", None], ["DB", None, None],
+    # 00 - 1F
+    ["NOP", None, None], ["NORMAL", None, None], ["PUSH", "O_SR", None], ["POP", "O_SR", None],
+    ["MAX", None, None], ["HALT", None, None], ["EI", "O_I8", None], ["RETI", None, None],
+    ["LD", "O_M8", "O_I8"], ["PUSH", "O_I8", None], ["LD", "O_M8", "O_I16"], ["PUSH", "O_I16", None],
+    ["INCF", None, None], ["DECF", None, None], ["RET", None, None], ["RETD", "O_I16", None],
+    ["RCF", None, None], ["SCF", None, None], ["CCF", None, None], ["ZCF", None, None],
+    ["PUSH", "O_A", None], ["POP", "O_A", None], ["EX", "O_F", "O_F"], ["LDF", "O_I8", None],
+    ["PUSH", "O_F", None], ["POP", "O_F", None], ["JP", "O_I16", None], ["JP", "O_I24", None],
+    ["CALL", "O_I16", None], ["CALL", "O_I24", None], ["CALR", "O_D16", None], ["DB", None, None],
 
-	# 20 - 3F
-	["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"],
-	["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"],
-	["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None],
-	["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None],
-	["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"],
-	["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"],
-	["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None],
-	["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None],
+    # 20 - 3F
+    ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"],
+    ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"], ["LD", "O_C8", "O_I8"],
+    ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None],
+    ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None], ["PUSH", "O_C16", None],
+    ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"],
+    ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"], ["LD", "O_C16", "O_I16"],
+    ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None],
+    ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None], ["PUSH", "O_C32", None],
 
-	# 40 - 5F
-	["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"],
-	["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"],
-	["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None],
-	["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None],
-	["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
-	["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
-	["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None],
-	["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None],
+    # 40 - 5F
+    ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"],
+    ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"], ["LD", "O_C32", "O_I32"],
+    ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None],
+    ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None], ["POP", "O_C16", None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None],
+    ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None], ["POP", "O_C32", None],
 
-	# 60 - 7F
-	["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
-	["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
-	["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
-	["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
-	["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
-	["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
-	["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
-	["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
+    # 60 - 7F
+    ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
+    ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
+    ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
+    ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"], ["JR", "O_CC", "O_D8"],
+    ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
+    ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
+    ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
+    ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"], ["JRL", "O_CC", "O_D16"],
 
-	# 80 - 9F
-	["M_80", None, None], ["M_80", None, None], ["M_80", None, None], ["M_80", None, None],
-	["M_80", None, None], ["M_80", None, None], ["M_80", None, None], ["M_80", None, None],
-	["M_88", None, None], ["M_88", None, None], ["M_88", None, None], ["M_88", None, None],
-	["M_88", None, None], ["M_88", None, None], ["M_88", None, None], ["M_88", None, None],
-	["M_90", None, None], ["M_90", None, None], ["M_90", None, None], ["M_90", None, None],
-	["M_90", None, None], ["M_90", None, None], ["M_90", None, None], ["M_90", None, None],
-	["M_98", None, None], ["M_98", None, None], ["M_98", None, None], ["M_98", None, None],
-	["M_98", None, None], ["M_98", None, None], ["M_98", None, None], ["M_98", None, None],
+    # 80 - 9F
+    ["M_80", None, None], ["M_80", None, None], ["M_80", None, None], ["M_80", None, None],
+    ["M_80", None, None], ["M_80", None, None], ["M_80", None, None], ["M_80", None, None],
+    ["M_88", None, None], ["M_88", None, None], ["M_88", None, None], ["M_88", None, None],
+    ["M_88", None, None], ["M_88", None, None], ["M_88", None, None], ["M_88", None, None],
+    ["M_90", None, None], ["M_90", None, None], ["M_90", None, None], ["M_90", None, None],
+    ["M_90", None, None], ["M_90", None, None], ["M_90", None, None], ["M_90", None, None],
+    ["M_98", None, None], ["M_98", None, None], ["M_98", None, None], ["M_98", None, None],
+    ["M_98", None, None], ["M_98", None, None], ["M_98", None, None], ["M_98", None, None],
 
-	# A0 - BF
-	["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None],
-	["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None],
-	["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None],
-	["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None],
-	["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None],
-	["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None],
-	["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None],
-	["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None],
+    # A0 - BF
+    ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None],
+    ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None], ["M_A0", None, None],
+    ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None],
+    ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None], ["M_A8", None, None],
+    ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None],
+    ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None], ["M_B0", None, None],
+    ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None],
+    ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None], ["M_B8", None, None],
 
-	# C0 - DF
-	["M_C0", None, None], ["M_C0", None, None], ["M_C0", None, None], ["M_C0", None, None],
-	["M_C0", None, None], ["M_C0", None, None], ["DB", None, None], ["oC8", None, None],
-	["oC8", None, None], ["oC8", None, None], ["oC8", None, None], ["oC8", None, None],
-	["oC8", None, None], ["oC8", None, None], ["oC8", None, None], ["oC8", None, None],
-	["M_D0", None, None], ["M_D0", None, None], ["M_D0", None, None], ["M_D0", None, None],
-	["M_D0", None, None], ["M_D0", None, None], ["DB", None, None], ["oD8", None, None],
-	["oD8", None, None], ["oD8", None, None], ["oD8", None, None], ["oD8", None, None],
-	["oD8", None, None], ["oD8", None, None], ["oD8", None, None], ["oD8", None, None],
+    # C0 - DF
+    ["M_C0", None, None], ["M_C0", None, None], ["M_C0", None, None], ["M_C0", None, None],
+    ["M_C0", None, None], ["M_C0", None, None], ["DB", None, None], ["oC8", None, None],
+    ["oC8", None, None], ["oC8", None, None], ["oC8", None, None], ["oC8", None, None],
+    ["oC8", None, None], ["oC8", None, None], ["oC8", None, None], ["oC8", None, None],
+    ["M_D0", None, None], ["M_D0", None, None], ["M_D0", None, None], ["M_D0", None, None],
+    ["M_D0", None, None], ["M_D0", None, None], ["DB", None, None], ["oD8", None, None],
+    ["oD8", None, None], ["oD8", None, None], ["oD8", None, None], ["oD8", None, None],
+    ["oD8", None, None], ["oD8", None, None], ["oD8", None, None], ["oD8", None, None],
 
-	# E0 - FF
-	["M_E0", None, None], ["M_E0", None, None], ["M_E0", None, None], ["M_E0", None, None],
-	["M_E0", None, None], ["M_E0", None, None], ["DB", None, None], ["M_E8", None, None],
-	["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None],
-	["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None],
-	["M_F0", None, None], ["M_F0", None, None], ["M_F0", None, None], ["M_F0", None, None],
-	["M_F0", None, None], ["M_F0", None, None], ["DB", None, None], ["LDX", None, None],
-	["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None],
-	["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None]
+    # E0 - FF
+    ["M_E0", None, None], ["M_E0", None, None], ["M_E0", None, None], ["M_E0", None, None],
+    ["M_E0", None, None], ["M_E0", None, None], ["DB", None, None], ["M_E8", None, None],
+    ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None],
+    ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None], ["M_E8", None, None],
+    ["M_F0", None, None], ["M_F0", None, None], ["M_F0", None, None], ["M_F0", None, None],
+    ["M_F0", None, None], ["M_F0", None, None], ["DB", None, None], ["LDX", None, None],
+    ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None],
+    ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None], ["SWI", "O_I3", None]
 ]
+
+
+mnemonic_80 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSH", "O_M", None], ["DB", None, None], ["RLD", "O_A", "O_M"], ["RRD", "O_A", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LDI", None, None], ["LDIR", None, None], ["LDD", None, None], ["LDDR", None, None],
+    ["CPI", None, None], ["CPIR", None, None], ["CPD", None, None], ["CPDR", None, None],
+    ["DB", None, None], ["LD", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_I8"], ["ADC", "O_M", "O_I8"], ["SUB", "O_M", "O_I8"], ["SBC", "O_M", "O_I8"],
+    ["AND", "O_M", "O_I8"], ["XOR", "O_M", "O_I8"], ["OR", "O_M", "O_I8"], ["CP", "O_M", "O_I8"],
+
+    # 40 - 5F
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLC", "O_M", None], ["RRC", "O_M", None], ["RL", "O_M", None], ["RR", "O_M", None],
+    ["SLA", "O_M", None], ["SRA", "O_M", None], ["SLL", "O_M", None], ["SRL", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+
+    # A0 - BF
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+
+    # C0 - DF
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+
+    # E0 - FF
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+]
+
+
+mnemonic_88 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSH", "O_M", None], ["DB", None, None], ["RLD", "O_A", "O_M"], ["RRD", "O_A", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["LD", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_I8"], ["ADC", "O_M", "O_I8"], ["SUB", "O_M", "O_I8"], ["SBC", "O_M", "O_I8"],
+    ["AND", "O_M", "O_I8"], ["XOR", "O_M", "O_I8"], ["OR", "O_M", "O_I8"], ["CP", "O_M", "O_I8"],
+
+    # 40 - 5F
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLC", "O_M", None], ["RRC", "O_M", None], ["RL", "O_M", None], ["RR", "O_M", None],
+    ["SLA", "O_M", None], ["SRA", "O_M", None], ["SLL", "O_M", None], ["SRL", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+
+    # A0 - BF
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+
+    # C0 - DF
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+
+    # E0 - FF
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+]
+
+mnemonic_90 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSHW", "O_M", None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LDIW", None, None], ["LDIRW", None, None], ["LDDW", None, None], ["LDDRW", None, None],
+    ["CPIW", None, None], ["CPIRW", None, None], ["CPDW", None, None], ["CPDRW", None, None],
+    ["DB", None, None], ["LDW", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_I16"], ["ADC", "O_M", "O_I16"], ["SUB", "O_M", "O_I16"], ["SBC", "O_M", "O_I16"],
+    ["AND", "O_M", "O_I16"], ["XOR", "O_M", "O_I16"], ["OR", "O_M", "O_I16"], ["CP", "O_M", "O_I16"],
+
+    # 40 - 5F
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+
+    # 60 - 7F
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLCW", "O_M", None], ["RRCW", "O_M", None], ["RLW", "O_M", None], ["RRW", "O_M", None],
+    ["SLAW", "O_M", None], ["SRAW", "O_M", None], ["SLLW", "O_M", None], ["SRLW", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+
+    # A0 - BF
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+
+    # C0 - DF
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+
+    # E0 - FF
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+]
+
+
+mnemonic_98 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSHW", "O_M", None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["LDW", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_I16"], ["ADC", "O_M", "O_I16"], ["SUB", "O_M", "O_I16"], ["SBC", "O_M", "O_I16"],
+    ["AND", "O_M", "O_I16"], ["XOR", "O_M", "O_I16"], ["OR", "O_M", "O_I16"], ["CP", "O_M", "O_I16"],
+
+    # 40 - 5F
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+
+    # 60 - 7F
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLCW", "O_M", None], ["RRCW", "O_M", None], ["RLW", "O_M", None], ["RRW", "O_M", None],
+    ["SLAW", "O_M", None], ["SRAW", "O_M", None], ["SLLW", "O_M", None], ["SRLW", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+
+    # A0 - BF
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+
+    # C0 - DF
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+
+    # E0 - FF
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+]
+
+mnemonic_a0 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"],
+    ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"],
+    ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"],
+    ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"],
+    ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"],
+    ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"],
+    ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"],
+    ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"],
+    ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"],
+
+    # A0 - BF
+    ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"],
+    ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"],
+    ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"],
+    ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"],
+    ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"],
+    ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"],
+    ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"],
+    ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"],
+
+    # C0 - DF
+    ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"],
+    ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"],
+    ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"],
+    ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"],
+    ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"],
+    ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"],
+    ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"],
+    ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"],
+
+    # E0 - FF
+    ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"],
+    ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"],
+    ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"],
+    ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"],
+    ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"],
+    ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"],
+    ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"],
+    ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"]
+]
+
+
+mnemonic_b0 = [
+    # 00 - 1F
+    ["LD", "O_M", "O_I8"], ["DB", None, None], ["LD", "O_M", "O_I16"], ["DB", None, None],
+    ["POP", "O_M", None], ["DB", None, None], ["POPW", "O_M", None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_M16"], ["DB", None, None], ["LDW", "O_M", "O_M16"], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["ANDCF", "O_A", "O_M"], ["ORCF", "O_A", "O_M"], ["XORCF", "O_A", "O_M"], ["LDCF", "O_A", "O_M"],
+    ["STCF", "O_A", "O_M"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+
+    # A0 - BF
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+
+    # C0 - DF
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+
+    # E0 - FF
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None],
+    ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None],
+    ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None],
+    ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None], ["RET", "O_CC", None],
+]
+
+
+mnemonic_b8 = [
+    # 00 - 1F
+    ["LD", "O_M", "O_I8"], ["DB", None, None], ["LD", "O_M", "O_I16"], ["DB", None, None],
+    ["POP", "O_M", None], ["DB", None, None], ["POPW", "O_M", None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_M16"], ["DB", None, None], ["LDW", "O_M", "O_M16"], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["ANDCF", "O_A", "O_M"], ["ORCF", "O_A", "O_M"], ["XORCF", "O_A", "O_M"], ["LDCF", "O_A", "O_M"],
+    ["STCF", "O_A", "O_M"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+
+    # A0 - BF
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+
+    # C0 - DF
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+
+    # E0 - FF
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+]
+
+mnemonic_c0 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSH", "O_M", None], ["DB", None, None], ["RLD", "O_A", "O_M"], ["RRD", "O_A", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["LD", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"], ["LD", "O_C8", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"], ["EX", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_I8"], ["ADC", "O_M", "O_I8"], ["SUB", "O_M", "O_I8"], ["SBC", "O_M", "O_I8"],
+    ["AND", "O_M", "O_I8"], ["XOR", "O_M", "O_I8"], ["OR", "O_M", "O_I8"], ["CP", "O_M", "O_I8"],
+
+    # 40 - 5F
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"], ["MUL", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"], ["MULS", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"], ["DIV", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+    ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"], ["DIVS", "O_MC16", "O_M"],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"], ["INC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"], ["DEC", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLC", "O_M", None], ["RRC", "O_M", None], ["RL", "O_M", None], ["RR", "O_M", None],
+    ["SLA", "O_M", None], ["SRA", "O_M", None], ["SLL", "O_M", None], ["SRL", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"], ["ADD", "O_C8", "O_M"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"], ["ADD", "O_M", "O_C8"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"], ["ADC", "O_C8", "O_M"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+    ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"], ["ADC", "O_M", "O_C8"],
+
+    # A0 - BF
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"], ["SUB", "O_C8", "O_M"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"], ["SUB", "O_M", "O_C8"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"], ["SBC", "O_C8", "O_M"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+    ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"], ["SBC", "O_M", "O_C8"],
+
+    # C0 - DF
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"], ["AND", "O_C8", "O_M"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"], ["AND", "O_M", "O_C8"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"], ["XOR", "O_C8", "O_M"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+    ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"], ["XOR", "O_M", "O_C8"],
+
+    # E0 - FF
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"], ["OR", "O_C8", "O_M"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"], ["OR", "O_M", "O_C8"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"], ["CP", "O_C8", "O_M"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+    ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"], ["CP", "O_M", "O_C8"],
+]
+
+
+# TODO: M_MUL_O_I8, M_MULS_O_I8, M_DIV_O_I8, M_DIVS_O_i8 need to be fixed
+mnemonic_c8 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["LD", "O_R", "O_I8"],
+    ["PUSH", "O_R", None], ["POP", "O_R", None], ["CPL", "O_R", None], ["NEG", "O_R", None],
+    ["MUL", "O_R", "O_I8"], ["MULS", "O_R", "O_I8"], ["DIV", "O_R", "O_I8"], ["DIVS", "O_R", "O_I8"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DAA", "O_R", None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DJNZ", "O_R", "O_D8"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["ANDCF", "O_I8", "O_R"], ["ORCF", "O_I8", "O_R"], ["XORCF", "O_I8", "O_R"], ["LDCF", "O_I8", "O_R"],
+    ["STCF", "O_I8", "O_R"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["ANDCF", "O_A", "O_R"], ["ORCF", "O_A", "O_R"], ["XORCF", "O_A", "O_R"], ["LDCF", "O_A", "O_R"],
+    ["STCF", "O_A", "O_R"], ["DB", None, None], ["LDC", "O_CR8", "O_R"], ["LDC", "O_R", "O_CR8"],
+    ["RES", "O_I8", "O_R"], ["SET", "O_I8", "O_R"], ["CHG", "O_I8", "O_R"], ["BIT", "O_I8", "O_R"],
+    ["TSET", "O_I8", "O_R"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"],
+    ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"], ["MUL", "O_MC16", "O_R"],
+    ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"],
+    ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"], ["MULS", "O_MC16", "O_R"],
+    ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"],
+    ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"], ["DIV", "O_MC16", "O_R"],
+    ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"],
+    ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"], ["DIVS", "O_MC16", "O_R"],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+
+    # 80 - 9F
+    ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"],
+    ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"], ["ADD", "O_C8", "O_R"],
+    ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"],
+    ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"], ["LD", "O_C8", "O_R"],
+    ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"],
+    ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"], ["ADC", "O_C8", "O_R"],
+    ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"],
+    ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"], ["LD", "O_R", "O_C8"],
+
+    # A0 - BF
+    ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"],
+    ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"], ["SUB", "O_C8", "O_R"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"],
+    ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"], ["SBC", "O_C8", "O_R"],
+    ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"],
+    ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"], ["EX", "O_C8", "O_R"],
+
+    # C0 - DF
+    ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"],
+    ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"], ["AND", "O_C8", "O_R"],
+    ["ADD", "O_R", "O_I8"], ["ADC", "O_R", "O_I8"], ["SUB", "O_R", "O_I8"], ["SBC", "O_R", "O_I8"],
+    ["AND", "O_R", "O_I8"], ["XOR", "O_R", "O_I8"], ["OR", "O_R", "O_I8"], ["CP", "O_R", "O_I8"],
+    ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"],
+    ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"], ["XOR", "O_C8", "O_R"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+
+    # E0 - FF
+    ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"],
+    ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"], ["OR", "O_C8", "O_R"],
+    ["RLC", "O_I8", "O_R"], ["RRC", "O_I8", "O_R"], ["RL", "O_I8", "O_R"], ["RR", "O_I8", "O_R"],
+    ["SLA", "O_I8", "O_R"], ["SRA", "O_I8", "O_R"], ["SLL", "O_I8", "O_R"], ["SRL", "O_I8", "O_R"],
+    ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"],
+    ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"], ["CP", "O_C8", "O_R"],
+    ["RLC", "O_A", "O_R"], ["RRC", "O_A", "O_R"], ["RL", "O_A", "O_R"], ["RR", "O_A", "O_R"],
+    ["SLA", "O_A", "O_R"], ["SRA", "O_A", "O_R"], ["SLL", "O_A", "O_R"], ["SRL", "O_A", "O_R"],
+]
+
+
+mnemonic_d0 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["PUSHW", "O_M", None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["LDW", "O_M16", "O_M"], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"], ["LD", "O_C16", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"], ["EX", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_I16"], ["ADC", "O_M", "O_I16"], ["SUB", "O_M", "O_I16"], ["SBC", "O_M", "O_I16"],
+    ["AND", "O_M", "O_I16"], ["XOR", "O_M", "O_I16"], ["OR", "O_M", "O_I16"], ["CP", "O_M", "O_I16"],
+
+    # 40 - 5F
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"], ["MUL", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"], ["MULS", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"], ["DIV", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+    ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"], ["DIVS", "O_C32", "O_M"],
+
+    # 60 - 7F
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"], ["INCW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"], ["DECW", "O_I3", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["RLCW", "O_M", None], ["RRCW", "O_M", None], ["RLW", "O_M", None], ["RRW", "O_M", None],
+    ["SLAW", "O_M", None], ["SRAW", "O_M", None], ["SLLW", "O_M", None], ["SRLW", "O_M", None],
+
+    # 80 - 9F
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"], ["ADD", "O_C16", "O_M"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"], ["ADD", "O_M", "O_C16"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"], ["ADC", "O_C16", "O_M"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+    ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"], ["ADC", "O_M", "O_C16"],
+
+    # A0 - BF
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"], ["SUB", "O_C16", "O_M"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"], ["SUB", "O_M", "O_C16"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"], ["SBC", "O_C16", "O_M"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+    ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"], ["SBC", "O_M", "O_C16"],
+
+    # C0 - DF
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"], ["AND", "O_C16", "O_M"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"], ["AND", "O_M", "O_C16"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"], ["XOR", "O_C16", "O_M"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+    ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"], ["XOR", "O_M", "O_C16"],
+
+    # E0 - FF
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"], ["OR", "O_C16", "O_M"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"], ["OR", "O_M", "O_C16"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"], ["CP", "O_C16", "O_M"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+    ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"], ["CP", "O_M", "O_C16"],
+]
+
+
+mnemonic_d8 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["LD", "O_R", "O_I16"],
+    ["PUSH", "O_R", None], ["POP", "O_R", None], ["CPL", "O_R", None], ["NEG", "O_R", None],
+    ["MUL", "O_R", "O_I16"], ["MULS", "O_R", "O_I16"], ["DIV", "O_R", "O_I16"], ["DIVS", "O_R", "O_I16"],
+    ["DB", None, None], ["DB", None, None], ["BS1F", "O_A", "O_R"], ["BS1B", "O_A", "O_R"],
+    ["DB", None, None], ["DB", None, None], ["EXTZ", "O_R", None], ["EXTS", "O_R", None],
+    ["PAA", "O_R", None], ["DB", None, None], ["MIRR", "O_R", None], ["DB", None, None],
+    ["DB", None, None], ["MULA", "O_R", None], ["DB", None, None], ["DB", None, None],
+    ["DJNZ", "O_R", "O_D8"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["ANDCF", "O_I8", "O_R"], ["ORCF", "O_I8", "O_R"], ["XORCF", "O_I8", "O_R"], ["LDCF", "O_I8", "O_R"],
+    ["STCF", "O_I8", "O_R"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["ANDCF", "O_A", "O_R"], ["ORCF", "O_A", "O_R"], ["XORCF", "O_A", "O_R"], ["LDCF", "O_A", "O_R"],
+    ["STCF", "O_A", "O_R"], ["DB", None, None], ["LDC", "O_CR16", "O_R"], ["LDC", "O_R", "O_CR16"],
+    ["RES", "O_I8", "O_R"], ["SET", "O_I8", "O_R"], ["CHG", "O_I8", "O_R"], ["BIT", "O_I8", "O_R"],
+    ["TSET", "O_I8", "O_R"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["MINC1", "O_I16", "O_R"], ["MINC2", "O_I16", "O_R"], ["MINC4", "O_I16", "O_R"], ["DB", None, None],
+    ["MDEC1", "O_I16", "O_R"], ["MDEC2", "O_I16", "O_R"], ["MDEC4", "O_I16", "O_R"], ["DB", None, None],
+
+    # 40 - 5F
+    ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"],
+    ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"], ["MUL", "O_C32", "O_R"],
+    ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"],
+    ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"], ["MULS", "O_C32", "O_R"],
+    ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"],
+    ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"], ["DIV", "O_C32", "O_R"],
+    ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"],
+    ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"], ["DIVS", "O_C32", "O_R"],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+    ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"], ["SCC", "O_CC", "O_R"],
+
+    # 80 - 9F
+    ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"],
+    ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"], ["ADD", "O_C16", "O_R"],
+    ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"],
+    ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"], ["LD", "O_C16", "O_R"],
+    ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"],
+    ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"], ["ADC", "O_C16", "O_R"],
+    ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"],
+    ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"], ["LD", "O_R", "O_C16"],
+
+    # A0 - BF
+    ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"],
+    ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"], ["SUB", "O_C16", "O_R"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"],
+    ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"], ["SBC", "O_C16", "O_R"],
+    ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"],
+    ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"], ["EX", "O_C16", "O_R"],
+
+    # C0 - DF
+    ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"],
+    ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"], ["AND", "O_C16", "O_R"],
+    ["ADD", "O_R", "O_I16"], ["ADC", "O_R", "O_I16"], ["SUB", "O_R", "O_I16"], ["SBC", "O_R", "O_I16"],
+    ["AND", "O_R", "O_I16"], ["XOR", "O_R", "O_I16"], ["OR", "O_R", "O_I16"], ["CP", "O_R", "O_I16"],
+    ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"],
+    ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"], ["XOR", "O_C16", "O_R"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+
+    # E0 - FF
+    ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"],
+    ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"], ["OR", "O_C16", "O_R"],
+    ["RLC", "O_I8", "O_R"], ["RRC", "O_I8", "O_R"], ["RL", "O_I8", "O_R"], ["RR", "O_I8", "O_R"],
+    ["SLA", "O_I8", "O_R"], ["SRA", "O_I8", "O_R"], ["SLL", "O_I8", "O_R"], ["SRL", "O_I8", "O_R"],
+    ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"],
+    ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"], ["CP", "O_C16", "O_R"],
+    ["RLC", "O_A", "O_R"], ["RRC", "O_A", "O_R"], ["RL", "O_A", "O_R"], ["RR", "O_A", "O_R"],
+    ["SLA", "O_A", "O_R"], ["SRA", "O_A", "O_R"], ["SLL", "O_A", "O_R"], ["SRL", "O_A", "O_R"],
+]
+
+
+mnemonic_e0 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"],
+    ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"], ["LD", "O_C32", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"],
+    ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"], ["ADD", "O_C32", "O_M"],
+    ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"],
+    ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"], ["ADD", "O_M", "O_C32"],
+    ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"],
+    ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"], ["ADC", "O_C32", "O_M"],
+    ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"],
+    ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"], ["ADC", "O_M", "O_C32"],
+
+    # A0 - BF
+    ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"],
+    ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"], ["SUB", "O_C32", "O_M"],
+    ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"],
+    ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"], ["SUB", "O_M", "O_C32"],
+    ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"],
+    ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"], ["SBC", "O_C32", "O_M"],
+    ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"],
+    ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"], ["SBC", "O_M", "O_C32"],
+
+    # C0 - DF
+    ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"],
+    ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"], ["AND", "O_C32", "O_M"],
+    ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"],
+    ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"], ["AND", "O_M", "O_C32"],
+    ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"],
+    ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"], ["XOR", "O_C32", "O_M"],
+    ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"],
+    ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"], ["XOR", "O_M", "O_C32"],
+
+    # E0 - FF
+    ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"],
+    ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"], ["OR", "O_C32", "O_M"],
+    ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"],
+    ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"], ["OR", "O_M", "O_C32"],
+    ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"],
+    ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"], ["CP", "O_C32", "O_M"],
+    ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"],
+    ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"], ["CP", "O_M", "O_C32"],
+]
+
+
+mnemonic_e8 = [
+    # 00 - 1F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["LD", "O_R", "O_I32"],
+    ["PUSH", "O_R", None], ["POP", "O_R", None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LINK", "O_R", "O_I16"], ["UNLK", "O_R", None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["EXTZ", "O_R", None], ["EXTS", "O_R", None],
+    ["PAA", "O_R", None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 20 - 3F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["LDC", "O_CR32", "O_R"], ["LDC", "O_R", "O_CR32"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"], ["INC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"], ["DEC", "O_I3", "O_R"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"],
+    ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"], ["ADD", "O_C32", "O_R"],
+    ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"],
+    ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"], ["LD", "O_C32", "O_R"],
+    ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"],
+    ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"], ["ADC", "O_C32", "O_R"],
+    ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"],
+    ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"], ["LD", "O_R", "O_C32"],
+
+    # A0 - BF
+    ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"],
+    ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"], ["SUB", "O_C32", "O_R"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"], ["LD", "O_R", "O_I3"],
+    ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"],
+    ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"], ["SBC", "O_C32", "O_R"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # C0 - DF
+    ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"],
+    ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"], ["AND", "O_C32", "O_R"],
+    ["ADD", "O_R", "O_I32"], ["ADC", "O_R", "O_I32"], ["SUB", "O_R", "O_I32"], ["SBC", "O_R", "O_I32"],
+    ["AND", "O_R", "O_I32"], ["XOR", "O_R", "O_I32"], ["OR", "O_R", "O_I32"], ["CP", "O_R", "O_I32"],
+    ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"],
+    ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"], ["XOR", "O_C32", "O_R"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+    ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"], ["CP", "O_R", "O_I3"],
+
+    # E0 - FF
+    ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"],
+    ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"], ["OR", "O_C32", "O_R"],
+    ["RLC", "O_I8", "O_R"], ["RRC", "O_I8", "O_R"], ["RL", "O_I8", "O_R"], ["RR", "O_I8", "O_R"],
+    ["SLA", "O_I8", "O_R"], ["SRA", "O_I8", "O_R"], ["SLL", "O_I8", "O_R"], ["SRL", "O_I8", "O_R"],
+    ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"],
+    ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"], ["CP", "O_C32", "O_R"],
+    ["RLC", "O_A", "O_R"], ["RRC", "O_A", "O_R"], ["RL", "O_A", "O_R"], ["RR", "O_A", "O_R"],
+    ["SLA", "O_A", "O_R"], ["SRA", "O_A", "O_R"], ["SLL", "O_A", "O_R"], ["SRL", "O_A", "O_R"],
+]
+
 
 mnemonic_f0 = [
     # 00 - 1F
     ["LD", "O_M", "O_I8"], ["DB", None, None], ["LD", "O_M", "O_I16"], ["DB", None, None],
+    ["POP", "O_M", None], ["DB", None, None], ["POPW", "O_M", None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_M16"], ["DB", None, None], ["LDW", "O_M", "O_M16"], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
 
-# TODO:
-#	{ M_POP, O_M, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_POPW, O_M, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_LD, O_M, O_M16 }, { M_DB, O_NONE, O_NONE }, { M_LDW, O_M, O_M16 }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#
-#	/* 20 - 3F */
-#	{ M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M },
-#	{ M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M }, { M_LDA, O_C16, O_M },
-#	{ M_ANDCF, O_A, O_M }, { M_ORCF, O_A, O_M }, { M_XORCF, O_A, O_M }, { M_LDCF, O_A, O_M },
-#	{ M_STCF, O_A, O_M }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M },
-#	{ M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M }, { M_LDA, O_C32, O_M },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#
-#	/* 40 - 5F */
-#	{ M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 },
-#	{ M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 }, { M_LD, O_M, O_C8 },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 },
-#	{ M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 }, { M_LD, O_M, O_C16 },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#
-#	/* 60 - 7F */
-#	{ M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 },
-#	{ M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 }, { M_LD, O_M, O_C32 },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#
-#	/* 80 - 9F */
-#	{ M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M },
-#	{ M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M }, { M_ANDCF, O_I3, O_M },
-#	{ M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M },
-#	{ M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M }, { M_ORCF, O_I3, O_M },
-#	{ M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M },
-#	{ M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M }, { M_XORCF, O_I3, O_M },
-#	{ M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M },
-#	{ M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M }, { M_LDCF, O_I3, O_M },
-#
-#	/* A0 - BF */
-#	{ M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M },
-#	{ M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M }, { M_STCF, O_I3, O_M },
-#	{ M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M },
-#	{ M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M }, { M_TSET, O_I3, O_M },
-#	{ M_RES, O_I3, O_M }, { M_RES, O_I3, O_M }, { M_RES, O_I3, O_M }, { M_RES, O_I3, O_M },
-#	{ M_RES, O_I3, O_M }, { M_RES, O_I3, O_M }, { M_RES, O_I3, O_M }, { M_RES, O_I3, O_M },
-#	{ M_SET, O_I3, O_M }, { M_SET, O_I3, O_M }, { M_SET, O_I3, O_M }, { M_SET, O_I3, O_M },
-#	{ M_SET, O_I3, O_M }, { M_SET, O_I3, O_M }, { M_SET, O_I3, O_M }, { M_SET, O_I3, O_M },
-#
-#	/* C0 - DF */
-#	{ M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M },
-#	{ M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M }, { M_CHG, O_I3, O_M },
-#	{ M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M },
-#	{ M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M }, { M_BIT, O_I3, O_M },
-#	{ M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M },
-#	{ M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M },
-#	{ M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M },
-#	{ M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M }, { M_JP, O_CC, O_M },
-#
-#	/* E0 - FF */
-#	{ M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M },
-#	{ M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M },
-#	{ M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M },
-#	{ M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M }, { M_CALL, O_CC, O_M },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE },
-#	{ M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }, { M_DB, O_NONE, O_NONE }
+    # 20 - 3F */
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"], ["LDA", "O_C16", "O_M"],
+    ["ANDCF", "O_A", "O_M"], ["ORCF", "O_A", "O_M"], ["XORCF", "O_A", "O_M"], ["LDCF", "O_A", "O_M"],
+    ["STCF", "O_A", "O_M"], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"], ["LDA", "O_C32", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 40 - 5F
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"], ["LD", "O_M", "O_C8"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"], ["LD", "O_M", "O_C16"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 60 - 7F
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"], ["LD", "O_M", "O_C32"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+
+    # 80 - 9F
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"], ["ANDCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"], ["ORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"], ["XORCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+    ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"], ["LDCF", "O_I3", "O_M"],
+
+    # A0 - BF
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"], ["STCF", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"], ["TSET", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"], ["RES", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+    ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"], ["SET", "O_I3", "O_M"],
+
+    # C0 - DF
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"], ["CHG", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"], ["BIT", "O_I3", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+    ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"], ["JP", "O_CC", "O_M"],
+
+    # E0 - FF
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"], ["CALL", "O_CC", "O_M"],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None],
+    ["DB", None, None], ["DB", None, None], ["DB", None, None], ["DB", None, None]
+]
+
+
+reg8 = ["W", "A", "B", "C", "D", "E", "H", "L"]
+reg16 = ["WA", "BC", "DE", "HL", "IX", "IY", "IZ", "SP"]
+reg32 = ["XWA", "XBC", "XDE", "XHL", "XIX", "XIY", "XIZ", "XSP"]
+mulreg16 = ["??", "WA", "??", "BC", "??", "DE", "??", "HL"]
+cond = ["F","LT","LE","ULE","PE/OV","M/MI","Z","C","T","GE","GT","UGT","PO/NOV","P/PL","NZ","NC"]
+
+allreg8 = [
+    "RA0" ,"RW0" ,"QA0" ,"QW0" ,"RC0" ,"RB0" ,"QC0" ,"QB0" ,"RE0" ,"RD0" ,"QE0" ,"QD0" ,"RL0" ,"RH0" ,"QL0" ,"QH0" ,
+    "RA1" ,"RW1" ,"QA1" ,"QW1" ,"RC1" ,"RB1" ,"QC1" ,"QB1" ,"RE1" ,"RD1" ,"QE1" ,"QD1" ,"RL1" ,"RH1" ,"QL1" ,"QH1" ,
+    "RA2" ,"RW2" ,"QA2" ,"QW2" ,"RC2" ,"RB2" ,"QC2" ,"QB2" ,"RE2" ,"RD2" ,"QE2" ,"QD2" ,"RL2" ,"RH2" ,"QL2" ,"QH2" ,
+    "RA3" ,"RW3" ,"QA3" ,"QW3" ,"RC3" ,"RB3" ,"QC3" ,"QB3" ,"RE3" ,"RD3" ,"QE3" ,"QD3" ,"RL3" ,"RH3" ,"QL3" ,"QH3" ,
+    "r40B","r41B","r42B","r43B","r44B","r45B","r46B","r47B","r48B","r49B","r4AB","r4BB","r4CB","r4DB","r4EB","r4FB",
+    "r50B","r51B","r52B","r53B","r54B","r55B","r56B","r57B","r58B","r59B","r5AB","r5BB","r5CB","r5DB","r5EB","r5FB",
+    "r60B","r61B","r62B","r63B","r64B","r65B","r66B","r67B","r68B","r69B","r6AB","r6BB","r6CB","r6DB","r6EB","r6FB",
+    "r70B","r71B","r72B","r73B","r74B","r75B","r76B","r77B","r78B","r79B","r7AB","r7BB","r7CB","r7DB","r7EB","r7FB",
+    "r80B","r81B","r82B","r83B","r84B","r85B","r86B","r87B","r88B","r89B","r8AB","r8BB","r8CB","r8DB","r8EB","r8FB",
+    "r90B","r91B","r92B","r93B","r94B","r95B","r96B","r97B","r98B","r99B","r9AB","r9BB","r9CB","r9DB","r9EB","r9FB",
+    "rA0B","rA1B","rA2B","rA3B","rA4B","rA5B","rA6B","rA7B","rA8B","rA9B","rAAB","rABB","rACB","rADB","rAEB","rAFB",
+    "rB0B","rB1B","rB2B","rB3B","rB4B","rB5B","rB6B","rB7B","rB8B","rB9B","rBAB","rBBB","rBCB","rBDB","rBEB","rBFB",
+    "rC0B","rC1B","rC2B","rC3B","rC4B","rC5B","rC6B","rC7B","rC8B","rC9B","rCAB","rCBB","rCCB","rCDB","rCEB","rCFB",
+    "RA-1","RW-1","QA-1","QW-1","RC-1","RB-1","QC-1","QB-1","RE-1","RD-1","QE-1","QD-1","RL-1","RH-1","QL-1","QH-1",
+    "A"   ,"W"   ,"QA"  ,"QW"  ,"C"   ,"B"   ,"QC"  ,"QB"  ,"E"   ,"D"   ,"QE"  ,"QD"  ,"L"   ,"H"   ,"QL"  ,"QH"  ,
+    "IXL" ,"IXH" ,"QIXL","QIXH","IYL" ,"IYH" ,"QIYL","QIYH","IZL" ,"IZH" ,"QIZL","QIZH","SPL" ,"SPH" ,"QSPL","QSPH",
+]
+
+
+allreg16 = [
+    "RWA0","r01W","QWA0","r03W","RBC0","r05W","QBC0","r07W","RDE0","r09W","QDE0","r0BW","RHL0","r0DW","QHL0","r0FW",
+    "RWA1","r11W","QWA1","r13W","RBC1","r15W","QBC1","r17W","RDE1","r19W","QDE1","r1BW","RHL1","r1DW","QHL1","r1FW",
+    "RWA2","r21W","QWA2","r23W","RBC2","r25W","QBC2","r27W","RDE2","r29W","QDE2","r2BW","RHL2","r2DW","QHL2","r2FW",
+    "RWA3","r31W","QWA3","r33W","RBC3","r35W","QBC3","r37W","RDE3","r39W","QDE3","r3BW","RHL3","r3DW","QHL3","r3FW",
+    "r40W","r41W","r42W","r43W","r44W","r45W","r46W","r47W","r48W","r49W","r4AW","r4BW","r4CW","r4DW","r4EW","r4FW",
+    "r50W","r51W","r52W","r53W","r54W","r55W","r56W","r57W","r58W","r59W","r5AW","r5BW","r5CW","r5DW","r5EW","r5FW",
+    "r60W","r61W","r62W","r63W","r64W","r65W","r66W","r67W","r68W","r69W","r6AW","r6BW","r6CW","r6DW","r6EW","r6FW",
+    "r70W","r71W","r72W","r73W","r74W","r75W","r76W","r77W","r78W","r79W","r7AW","r7BW","r7CW","r7DW","r7EW","r7FW",
+    "r80W","r81W","r82W","r83W","r84W","r85W","r86W","r87W","r88W","r89W","r8AW","r8BW","r8CW","r8DW","r8EW","r8FW",
+    "r90W","r91W","r92W","r93W","r94W","r95W","r96W","r97W","r98W","r99W","r9AW","r9BW","r9CW","r9DW","r9EW","r9FW",
+    "rA0W","rA1W","rA2W","rA3W","rA4W","rA5W","rA6W","rA7W","rA8W","rA9W","rAAW","rABW","rACW","rADW","rAEW","rAFW",
+    "rB0W","rB1W","rB2W","rB3W","rB4W","rB5W","rB6W","rB7W","rB8W","rB9W","rBAW","rBBW","rBCW","rBDW","rBEW","rBFW",
+    "rC0W","rC1W","rC2W","rC3W","rC4W","rC5W","rC6W","rC7W","rC8W","rC9W","rCAW","rCBW","rCCW","rCDW","rCEW","rCFW",
+    "RWA-1","rD1W","QWA-1","rD3W","RBC-1","rD5W","QBC-1","rD7W","RDE-1","rD9W","QDE-1","rDBW","RHL-1","rDDW","QHL-1","rDFW",
+    "WA"  ,"rE1W","QWA" ,"rE3W","BC"  ,"rE5W","QBC" ,"rE7W","DE"  ,"rE9W","QDE" ,"rEBW","HL"  ,"rEDW","QHL" ,"rEFW",
+    "IX"  ,"rF1W","QIX" ,"rF3W","IY"  ,"rF5W","QIY" ,"rF7W","IZ"  ,"rF9W","QIZ" ,"rFBW","SP"  ,"rFDW","QSP" ,"rFFW",
+]
+
+allreg32 = [
+    "XWA0","XWA0","XWA0","r03L","XBC0","XBC0","XBC0","r07L","XDE0","XDE0","XDE0","r0BL","XHL0","XHL0","XHL0","r0FL",
+    "XWA1","XWA1","XWA1","r13L","XBC1","XBC1","XBC1","r17L","XDE1","XDE1","XDE1","r1BL","XHL1","XHL1","XHL1","r1FL",
+    "XWA2","XWA2","XWA2","r23L","XBC2","XBC2","XBC2","r27L","XDE2","XDE2","XDE2","r2BL","XHL2","XHL2","XHL2","r2FL",
+    "XWA3","XWA3","XWA3","r33L","XBC3","XBC3","XBC3","r37L","XDE3","XDE3","XDE3","r3BL","XHL3","XHL3","XHL3","r3FL",
+    "r40L","r41L","r42L","r43L","r44L","r45L","r46L","r47L","r48L","r49L","r4AL","r4BL","r4CL","r4DL","r4EL","r4FL",
+    "r50L","r51L","r52L","r53L","r54L","r55L","r56L","r57L","r58L","r59L","r5AL","r5BL","r5CL","r5DL","r5EL","r5FL",
+    "r60L","r61L","r62L","r63L","r64L","r65L","r66L","r67L","r68L","r69L","r6AL","r6BL","r6CL","r6DL","r6EL","r6FL",
+    "r70L","r71L","r72L","r73L","r74L","r75L","r76L","r77L","r78L","r79L","r7AL","r7BL","r7CL","r7DL","r7EL","r7FL",
+    "r80L","r81L","r82L","r83L","r84L","r85L","r86L","r87L","r88L","r89L","r8AL","r8BL","r8CL","r8DL","r8EL","r8FL",
+    "r90L","r91L","r92L","r93L","r94L","r95L","r96L","r97L","r98L","r99L","r9AL","r9BL","r9CL","r9DL","r9EL","r9FL",
+    "rA0L","rA1L","rA2L","rA3L","rA4L","rA5L","rA6L","rA7L","rA8L","rA9L","rAAL","rABL","rACL","rADL","rAEL","rAFL",
+    "rB0L","rB1L","rB2L","rB3L","rB4L","rB5L","rB6L","rB7L","rB8L","rB9L","rBAL","rBBL","rBCL","rBDL","rBEL","rBFL",
+    "rC0L","rC1L","rC2L","rC3L","rC4L","rC5L","rC6L","rC7L","rC8L","rC9L","rCAL","rCBL","rCCL","rCDL","rCEL","rCFL",
+    "XWA-1","XWA-1","XWA-1","rD3L","XBC-1","XBC-1","XBC-1","rD7L","XDE-1","XDE-1","XDE-1","rDBL","XHL-1","XHL-1","XHL-1","rDFL",
+    "XWA" ,"XWA" ,"XWA" ,"rE3L","XBC" ,"XBC", "XBC" ,"rE7L","XDE" ,"XDE" ,"XDE" ,"rEDL","XHL" ,"XHL" ,"XHL" ,"rEFL",
+    "XIX" ,"XIX" ,"XIX" ,"rF3L","XIY" ,"XIY" ,"XIY" ,"rF7L","XIZ" ,"XIZ" ,"XIZ" ,"rFBL","XSP" ,"XSP" ,"XSP" ,"rFFL",
 ]
 
 
@@ -291,78 +1408,303 @@ class TLCS900H_Trace(ExecTrace):
 
         return header
 
-    def format_operand(self, operand, dasm, value):
+    def format_operand(self, opcode, operand, dasm, value, v):
+
         if operand == None:
             return ""
+
+        elif operand == "O_A":
+            return " A"
+
+        elif operand == "O_C8":
+            return " %s" % reg8[opcode & 0x07]
+
+        elif operand == "O_C16":
+            return " %s" % reg16[opcode & 0x07]
+
+        elif operand == "O_C32":
+            return " %s" % reg32[opcode & 0x07]
+
+        elif operand == "O_MC16":
+            return " %s" % mulreg16[opcode & 0x07]
+
+        elif operand == "O_CC":
+            return " %s" % cond[opcode & 0x07]
+
+        elif operand == "O_CR8":
+            imm = self.fetch()
+            if imm & 0xe3 == 0x42:
+                return " DMAM%d" % ((imm >> 2) & 7)
+            else:
+                return " <Unknown 8-bit ControlReg 0x%02X>" % imm
+
+        elif operand == "O_CR16":
+            imm = self.fetch()
+            if imm & 0xe3 == 0x40:
+                return " DMAC%d" % ((imm >> 2) & 7)
+            else:
+                return " <Unknown 16-bit ControlReg 0x%02X>" % imm
+
+        elif operand == "O_CR32":
+            imm = self.fetch()
+            if imm & 0xe3 == 0x00:
+                return " DMAS%d" % ((imm >> 2) & 7)
+            if imm & 0xe3 == 0x20:
+                return " DMAD%d" % ((imm >> 2) & 7)
+            else:
+                return " <Unknown 32-bit ControlReg 0x%02X>" % imm
+
+        elif operand == "O_D8":
+            imm = self.fetch()
+            address = ((self.PC + int(imm)) & 0xFFFFFF) - 0x100  # FIXME: Why minus 0x100 ?!
+            #if dasm[MNEMONIC] in ["JP"]:
+            #    self.unconditional_jump(address) # FIXME: this should work!
+            return " 0x%06x" % (address)
+
+        elif operand == "O_D16":
+            imm = self.fetch()
+            imm = imm | (self.fetch() << 8)
+            address = ((self.PC + int(imm)) & 0xFFFFFF)
+            #if dasm[MNEMONIC] in ["JP"]:
+            #    self.unconditional_jump(address) # FIXME: this should work!
+            return " 0x%06x" % (address)
+
+        elif operand == "O_F":
+            return " F"
+
+        elif operand == "O_I3":
+            return " %d" % (v & 0x07)
+
+        elif operand == "O_I8":
+            imm = self.fetch()
+            return ", 0x%02x" % imm
+
+        elif operand == "O_I16":
+            imm = self.fetch()
+            imm = imm | (self.fetch() << 8)
+            return ", 0x%04x" % imm
+
+        elif operand == "O_I24":
+            imm = self.fetch()
+            imm = imm | (self.fetch() << 8)
+            imm = imm | (self.fetch() << 16)
+            return ", 0x%06x" % imm
+
+        elif operand == "O_I32":
+            imm = self.fetch()
+            imm = imm | (self.fetch() << 8)
+            imm = imm | (self.fetch() << 16)
+            imm = imm | (self.fetch() << 24)
+            return ", 0x%08x" % imm
+
         elif operand == "O_M":
             if dasm[MNEMONIC] in ["CALL", "JP", "LDA"]:
                 return f" {value}"
             else:
                 return f" ({value})"
-        elif operand == "O_I8":
+
+        elif operand == "O_M8":
             imm = self.fetch()
-            return ", 0x%02x" % imm
+            return " (%s)" % getVariableName(imm)
+
+        elif operand == "O_M16":
+            imm = self.fetch()
+            imm = imm | (self.fetch() << 8)
+            return " (%s)" % getVariableName(imm)
+
+        elif operand == "O_R":
+            return " %s" % value
+
+        elif operand == "O_SR":
+            return " SR"
+
         else:
-            return "?"
+            return " <? %s>" % operand
+
 
 
     def disasm_instruction(self, opcode):
         buf = "bug"
+        v = 0
         dasm = instructions[opcode]
 
         # Check for extended addressing modes
-        if dasm[MNEMONIC] == "M_F0":
-            if opcode & 0x07 == 0x01:  # 0xF1
-                buf = self.fetch()
-                buf = buf | (self.fetch() << 8)
-                buf = getVariableName(buf)
+        if dasm[MNEMONIC] == "M_80":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_88":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_90":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_98":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_A0":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_B0":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_B8":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_C0":
+
+            if opcode & 0x07 == 0x00:  # 0xC0
+                imm = self.fetch()
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x01:  # 0xC1
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x02:  # 0xC2
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                imm = imm | (self.fetch() << 16)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x03:  # 0xC3
+                imm = self.fetch()
+                if imm & 0x03 == 0x00:
+                    buf = allreg32[imm]
+
+                elif imm & 0x03 == 0x01:
+                    op = imm
+                    imm = self.fetch()
+                    imm = imm | (self.fetch() << 8)
+                    buf = "%s + 0x%04x" % (allreg32[op], imm)
+
+                elif imm & 0x03 == 0x02:
+                    buf = "unknown"
+
+                elif imm & 0x03 == 0x03:
+                    if imm == 0x3:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s + %s" % (allreg32[op], allreg8[op1])
+
+                    elif imm == 0x07:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+
+                    elif imm == 0x13:
+                        imm = self.fetch()
+                        imm = imm | (self.fetch() << 8)
+                        buf = "0x%06x" % (self.PC + int(imm))
+
+            elif opcode & 0x07 == 0x04:  # 0xC4
+                imm = self.fetch()
+                buf = "-%s" % allreg32[imm]
+
+            elif opcode & 0x07 == 0x05:  # 0xC5
+                imm = self.fetch()
+                buf = "%s+" % allreg32[imm]
+
+            else:
+                self.illegal_instruction(opcode)
+                return "; BAD '0xC?' instruction parsing! (? = 0x%02X)" % (opcode & 0x07)
+
+            dasm = mnemonic_c0[self.fetch()]
+
+
+        elif dasm[MNEMONIC] == "oC8":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_D0":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "oD8":
+            if opcode & 0x08:
+                buf = reg16[opcode & 0x07]
+            else:
+                imm = self.fetch()
+                buf = allreg16[imm]
+
+            v = self.fetch()
+            dasm = mnemonic_d8[v]
+
+        elif dasm[MNEMONIC] == "M_E0":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_E8":
+                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+        elif dasm[MNEMONIC] == "M_F0":
+
+            if opcode & 0x07 == 0x00:  # 0xF0
+                imm = self.fetch()
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x01:  # 0xF1
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x02:  # 0xF2
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                imm = imm | (self.fetch() << 16)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x03:  # 0xF3
+                imm = self.fetch()
+                if imm & 0x03 == 0x00:
+                    buf = allreg32[imm]
+
+                elif imm & 0x03 == 0x01:
+                    op = imm
+                    imm = self.fetch()
+                    imm = imm | (self.fetch() << 8)
+                    buf = "%s + 0x%04x" % (allreg32[op], imm)
+
+                elif imm & 0x03 == 0x02:
+                    buf = "unknown"
+
+                elif imm & 0x03 == 0x03:
+                    if imm == 0x3:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s + %s" % (allreg32[op], allreg8[op1])
+
+                    elif imm == 0x07:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+
+                    elif imm == 0x13:
+                        imm = self.fetch()
+                        imm = imm | (self.fetch() << 8)
+                        buf = "0x%06x" % (self.PC + int(imm))
+
+            elif opcode & 0x07 == 0x04:  # 0xF4
+                imm = self.fetch()
+                buf = "-%s" % allreg32[imm]
+
+            elif opcode & 0x07 == 0x05:  # 0xF5
+                imm = self.fetch()
+                buf = "%s+" % allreg32[imm]
+
             else:
                 self.illegal_instruction(opcode)
                 return "; BAD '0xF?' instruction parsing! (? = 0x%02X)" % (opcode & 0x07)
 
-            dasm = mnemonic_f0[self.fetch()]
+            v = self.fetch()
+            dasm = mnemonic_f0[v]
 
         dasm_string = dasm[MNEMONIC]
-        dasm_string += self.format_operand(dasm[OPERAND_1], dasm, buf)
-        dasm_string += self.format_operand(dasm[OPERAND_2], dasm, buf)
+        dasm_string += self.format_operand(opcode, dasm[OPERAND_1], dasm, buf, v)
+        dasm_string += self.format_operand(opcode, dasm[OPERAND_2], dasm, buf, v)
+
+        print(f"next: {hex(self.PC)}\t{dasm_string}")
+        if dasm[MNEMONIC] == "RET":
+            self.return_from_subroutine()
 
         return dasm_string
-
-    def OLD_CODE_disasm_instruction(self, opcode):
-
-        if opcode == 0x01: # mov
-            dstVar = getVariableName(self.fetch())
-            srcVar = getVariableName(self.fetch())
-            return "mov [%s], [%s]" % (dstVar, srcVar)
-
-        elif opcode == 0x02: # add
-            dstVar = getVariableName(self.fetch())
-            srcVar = getVariableName(self.fetch())
-            return "add [%s], [%s]" % (dstVar, srcVar)
-
-        elif opcode == 0x04: # call
-            address = self.fetch()
-            address = (address << 8) | self.fetch()
-            self.subroutine(address)
-            return "call %s" % self.getLabelName(address)
-
-        elif opcode == 0x05: # ret
-            self.return_from_subroutine()
-            return "ret"
-
-        elif opcode == 0x07: # jmp
-            address = self.fetch()
-            address = (address << 8) | self.fetch()
-            self.unconditional_jump(address)
-            return "jmp %s" % self.getLabelName(address)
-
-        elif opcode == 0x09: # djnz = Decrement and Jump if Not Zero
-            var = self.fetch();
-            offset = self.fetch()
-            offset = (offset << 8) | self.fetch()
-            varName = getVariableName(var)
-            self.conditional_branch(offset)
-            return "djnz [%s], %s" % (varName, self.getLabelName(offset))
 
 
 if not (len(sys.argv) == 2):
