@@ -1429,7 +1429,7 @@ class TLCS900H_Trace(ExecTrace):
             return " %s" % mulreg16[opcode & 0x07]
 
         elif operand == "O_CC":
-            return " %s" % cond[opcode & 0x07]
+            return " %s" % cond[opcode & 0x0F]
 
         elif operand == "O_CR8":
             imm = self.fetch()
@@ -1456,7 +1456,9 @@ class TLCS900H_Trace(ExecTrace):
 
         elif operand == "O_D8":
             imm = self.fetch()
-            address = ((self.PC + int(imm)) & 0xFFFFFF) - 0x100  # FIXME: Why minus 0x100 ?!
+            if(imm & 0x80):
+                imm = -0x100 + imm
+            address = ((self.PC + imm) & 0xFFFFFF)
             #if dasm[MNEMONIC] in ["JP"]:
             #    self.unconditional_jump(address) # FIXME: this should work!
             return " 0x%06x" % (address)
@@ -1464,6 +1466,8 @@ class TLCS900H_Trace(ExecTrace):
         elif operand == "O_D16":
             imm = self.fetch()
             imm = imm | (self.fetch() << 8)
+            if(imm & 0x8000):
+                imm = -0x10000 + imm
             address = ((self.PC + int(imm)) & 0xFFFFFF)
             #if dasm[MNEMONIC] in ["JP"]:
             #    self.unconditional_jump(address) # FIXME: this should work!
@@ -1530,25 +1534,56 @@ class TLCS900H_Trace(ExecTrace):
 
         # Check for extended addressing modes
         if dasm[MNEMONIC] == "M_80":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            buf = reg32[opcode & 0x07]
+            v = self.fetch()
+            dasm = mnemonic_80[v]
+
 
         elif dasm[MNEMONIC] == "M_88":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            imm = self.fetch()
+            buf = "%s + 0x%02x" % (reg32[opcode & 0x07], imm)
+            v = self.fetch()
+            dasm = mnemonic_88[v]
+
 
         elif dasm[MNEMONIC] == "M_90":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            buf = reg32[opcode & 0x07]
+            v = self.fetch()
+            dasm = mnemonic_90[v]
+
 
         elif dasm[MNEMONIC] == "M_98":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            imm = self.fetch()
+            buf = "%s + 0x%02x" % (reg32[opcode & 0x07], imm)
+            v = self.fetch()
+            dasm = mnemonic_98[v]
+
 
         elif dasm[MNEMONIC] == "M_A0":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            buf = reg32[opcode & 0x07]
+            v = self.fetch()
+            dasm = mnemonic_a0[v]
+
+
+        elif dasm[MNEMONIC] == "M_A8":
+            imm = self.fetch()
+            buf = "%s + 0x%02x" % (reg32[opcode & 0x07], imm)
+            v = self.fetch()
+            dasm = mnemonic_a0[v]
+
 
         elif dasm[MNEMONIC] == "M_B0":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            buf = reg32[opcode & 0x07]
+            v = self.fetch()
+            dasm = mnemonic_b0[v]
+
 
         elif dasm[MNEMONIC] == "M_B8":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            imm = self.fetch()
+            buf = "%s + 0x%02x" % (reg32[opcode & 0x07], imm)
+            v = self.fetch()
+            dasm = mnemonic_b8[v]
+
 
         elif dasm[MNEMONIC] == "M_C0":
 
@@ -1609,14 +1644,83 @@ class TLCS900H_Trace(ExecTrace):
                 self.illegal_instruction(opcode)
                 return "; BAD '0xC?' instruction parsing! (? = 0x%02X)" % (opcode & 0x07)
 
-            dasm = mnemonic_c0[self.fetch()]
+            v = self.fetch()
+            dasm = mnemonic_c0[v]
 
 
         elif dasm[MNEMONIC] == "oC8":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            if opcode & 0x08:
+                buf = reg8[opcode & 0x07]
+            else:
+                imm = self.fetch()
+                buf = allreg8[imm]
+
+            v = self.fetch()
+            dasm = mnemonic_c8[v]
+
 
         elif dasm[MNEMONIC] == "M_D0":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+            if opcode & 0x07 == 0x00:  # 0xD0
+                imm = self.fetch()
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x01:  # 0xD1
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x02:  # 0xD2
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                imm = imm | (self.fetch() << 16)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x03:  # 0xD3
+                imm = self.fetch()
+                if imm & 0x03 == 0x00:
+                    buf = allreg32[imm]
+
+                elif imm & 0x03 == 0x01:
+                    op = imm
+                    imm = self.fetch()
+                    imm = imm | (self.fetch() << 8)
+                    buf = "%s + 0x%04x" % (allreg32[op], imm)
+
+                elif imm & 0x03 == 0x02:
+                    buf = "unknown"
+
+                elif imm & 0x03 == 0x03:
+                    if imm == 0x3:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s + %s" % (allreg32[op], allreg8[op1])
+
+                    elif imm == 0x07:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+
+                    elif imm == 0x13:
+                        imm = self.fetch()
+                        imm = imm | (self.fetch() << 8)
+                        buf = "0x%06x" % (self.PC + int(imm))
+
+            elif opcode & 0x07 == 0x04:  # 0xD4
+                imm = self.fetch()
+                buf = "-%s" % allreg32[imm]
+
+            elif opcode & 0x07 == 0x05:  # 0xD5
+                imm = self.fetch()
+                buf = "%s+" % allreg32[imm]
+
+            else:
+                self.illegal_instruction(opcode)
+                return "; BAD '0xD?' instruction parsing! (? = 0x%02X)" % (opcode & 0x07)
+
+            v = self.fetch()
+            dasm = mnemonic_d0[v]
+
 
         elif dasm[MNEMONIC] == "oD8":
             if opcode & 0x08:
@@ -1628,11 +1732,80 @@ class TLCS900H_Trace(ExecTrace):
             v = self.fetch()
             dasm = mnemonic_d8[v]
 
+
         elif dasm[MNEMONIC] == "M_E0":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+
+            if opcode & 0x07 == 0x00:  # 0xE0
+                imm = self.fetch()
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x01:  # 0xE1
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x02:  # 0xE2
+                imm = self.fetch()
+                imm = imm | (self.fetch() << 8)
+                imm = imm | (self.fetch() << 16)
+                buf = getVariableName(imm)
+
+            elif opcode & 0x07 == 0x03:  # 0xE3
+                imm = self.fetch()
+                if imm & 0x03 == 0x00:
+                    buf = allreg32[imm]
+
+                elif imm & 0x03 == 0x01:
+                    op = imm
+                    imm = self.fetch()
+                    imm = imm | (self.fetch() << 8)
+                    buf = "%s + 0x%04x" % (allreg32[op], imm)
+
+                elif imm & 0x03 == 0x02:
+                    buf = "unknown"
+
+                elif imm & 0x03 == 0x03:
+                    if imm == 0x3:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s + %s" % (allreg32[op], allreg8[op1])
+
+                    elif imm == 0x07:
+                        op = self.fetch()
+                        op1 = self.fetch()
+                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+
+                    elif imm == 0x13:
+                        imm = self.fetch()
+                        imm = imm | (self.fetch() << 8)
+                        buf = "0x%06x" % (self.PC + int(imm))
+
+            elif opcode & 0x07 == 0x04:  # 0xE4
+                imm = self.fetch()
+                buf = "-%s" % allreg32[imm]
+
+            elif opcode & 0x07 == 0x05:  # 0xE5
+                imm = self.fetch()
+                buf = "%s+" % allreg32[imm]
+
+            else:
+                self.illegal_instruction(opcode)
+                return "; BAD '0xE?' instruction parsing! (? = 0x%02X)" % (opcode & 0x07)
+
+            v = self.fetch()
+            dasm = mnemonic_e0[v]
+
 
         elif dasm[MNEMONIC] == "M_E8":
-                return f"; Implement-me! {dasm[MNEMONIC]}"
+            if opcode & 0x08:
+                buf = reg16[opcode & 0x07]
+            else:
+                imm = self.fetch()
+                buf = allreg16[imm]
+
+            v = self.fetch()
+            dasm = mnemonic_e8[v]
+
 
         elif dasm[MNEMONIC] == "M_F0":
 
