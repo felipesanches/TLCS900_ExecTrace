@@ -76,7 +76,7 @@ def getVariableName(value):
     if value in SPECIAL_PURPOSE_VARS.keys():
         return SPECIAL_PURPOSE_VARS[value]
     else:
-        return "0x%06X" % value
+        return value
 
 instructions = [
     # 00 - 1F
@@ -1469,9 +1469,11 @@ class TLCS900H_Trace(ExecTrace):
             if(imm & 0x8000):
                 imm = -0x10000 + imm
             address = ((self.PC + int(imm)) & 0xFFFFFF)
-            #if dasm[MNEMONIC] in ["JP"]:
-            #    self.unconditional_jump(address) # FIXME: this should work!
-            return " 0x%06x" % (address)
+            if dasm[MNEMONIC] in ["CALR"]:
+                self.subroutine(address)
+                return " " + self.getLabelName(address)
+            else:
+                return " 0x%06x" % (address)
 
         elif operand == "O_F":
             return " F"
@@ -1486,13 +1488,23 @@ class TLCS900H_Trace(ExecTrace):
         elif operand == "O_I16":
             imm = self.fetch()
             imm = imm | (self.fetch() << 8)
-            return ", 0x%04x" % imm
+            address = imm
+            if dasm[MNEMONIC] in ["CALL"]:
+                self.subroutine(address)
+                return " " + self.getLabelName(address)
+            else:
+                return ", 0x%04x" % imm
 
         elif operand == "O_I24":
             imm = self.fetch()
             imm = imm | (self.fetch() << 8)
             imm = imm | (self.fetch() << 16)
-            return ", 0x%06x" % imm
+            address = imm
+            if dasm[MNEMONIC] in ["CALL"]:
+                self.subroutine(address)
+                return " " + self.getLabelName(address)
+            else:
+                return ", 0x%06x" % imm
 
         elif operand == "O_I32":
             imm = self.fetch()
@@ -1502,7 +1514,14 @@ class TLCS900H_Trace(ExecTrace):
             return ", 0x%08x" % imm
 
         elif operand == "O_M":
-            if dasm[MNEMONIC] in ["CALL", "JP", "LDA"]:
+            if dasm[MNEMONIC] == "CALL":
+                if isinstance(value, int):
+                    self.subroutine(value)
+                    return " " + self.getLabelName(value)
+                else:
+                    print(f"WARNING at {self.PC:08X}:  CALL {value}")
+                    return f" {value}"
+            elif dasm[MNEMONIC] in ["JP", "LDA"]:
                 return f" {value}"
             else:
                 return f" ({value})"
@@ -1625,12 +1644,12 @@ class TLCS900H_Trace(ExecTrace):
                     elif imm == 0x07:
                         op = self.fetch()
                         op1 = self.fetch()
-                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+                        buf = "%s + %s" % (allreg32[op], allreg16[op1])
 
                     elif imm == 0x13:
                         imm = self.fetch()
                         imm = imm | (self.fetch() << 8)
-                        buf = "0x%06x" % (self.PC + int(imm))
+                        buf = self.PC + int(imm)
 
             elif opcode & 0x07 == 0x04:  # 0xC4
                 imm = self.fetch()
@@ -1699,12 +1718,12 @@ class TLCS900H_Trace(ExecTrace):
                     elif imm == 0x07:
                         op = self.fetch()
                         op1 = self.fetch()
-                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+                        buf = "%s + %s" % (allreg32[op], allreg16[op1])
 
                     elif imm == 0x13:
                         imm = self.fetch()
                         imm = imm | (self.fetch() << 8)
-                        buf = "0x%06x" % (self.PC + int(imm))
+                        buf = self.PC + int(imm)
 
             elif opcode & 0x07 == 0x04:  # 0xD4
                 imm = self.fetch()
@@ -1773,12 +1792,12 @@ class TLCS900H_Trace(ExecTrace):
                     elif imm == 0x07:
                         op = self.fetch()
                         op1 = self.fetch()
-                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+                        buf = "%s + %s" % (allreg32[op], allreg16[op1])
 
                     elif imm == 0x13:
                         imm = self.fetch()
                         imm = imm | (self.fetch() << 8)
-                        buf = "0x%06x" % (self.PC + int(imm))
+                        buf = self.PC + int(imm)
 
             elif opcode & 0x07 == 0x04:  # 0xE4
                 imm = self.fetch()
@@ -1847,12 +1866,12 @@ class TLCS900H_Trace(ExecTrace):
                     elif imm == 0x07:
                         op = self.fetch()
                         op1 = self.fetch()
-                        buf = "%s+%s" % (allreg32[op], allreg16[op1])
+                        buf = "%s + %s" % (allreg32[op], allreg16[op1])
 
                     elif imm == 0x13:
                         imm = self.fetch()
                         imm = imm | (self.fetch() << 8)
-                        buf = "0x%06x" % (self.PC + int(imm))
+                        buf = self.PC + int(imm)
 
             elif opcode & 0x07 == 0x04:  # 0xF4
                 imm = self.fetch()
@@ -1873,8 +1892,8 @@ class TLCS900H_Trace(ExecTrace):
         dasm_string += self.format_operand(opcode, dasm[OPERAND_1], dasm, buf, v)
         dasm_string += self.format_operand(opcode, dasm[OPERAND_2], dasm, buf, v)
 
-        print(f"next: {hex(self.PC)}\t{dasm_string}")
-        if dasm[MNEMONIC] == "RET":
+        # print(f"next: {hex(self.PC)}\t{dasm_string}")
+        if dasm[MNEMONIC] in ["RET", "RETI", "HALT"] and dasm[OPERAND_1] == None: # ignore conditional ret
             self.return_from_subroutine()
 
         return dasm_string
@@ -1900,6 +1919,8 @@ trace = TLCS900H_Trace(rom_file,
                        labels=KNOWN_LABELS.copy(),
                        loglevel=0)
 trace.run(entry_points)
+for ep in entry_points:
+    trace.register_label(ep)
 #trace.print_ranges()
 #trace.print_grouped_ranges()
 
