@@ -1417,19 +1417,19 @@ class TLCS900H_Trace(ExecTrace):
             return " A"
 
         elif operand == "O_C8":
-            return " %s" % reg8[opcode & 0x07]
+            return " %s" % reg8[v & 0x07]
 
         elif operand == "O_C16":
-            return " %s" % reg16[opcode & 0x07]
+            return " %s" % reg16[v & 0x07]
 
         elif operand == "O_C32":
-            return " %s" % reg32[opcode & 0x07]
+            return " %s" % reg32[v & 0x07]
 
         elif operand == "O_MC16":
-            return " %s" % mulreg16[opcode & 0x07]
+            return " %s" % mulreg16[v & 0x07]
 
         elif operand == "O_CC":
-            return " %s" % cond[opcode & 0x0F]
+            return " %s" % cond[v & 0x0F]
 
         elif operand == "O_CR8":
             imm = self.fetch()
@@ -1529,7 +1529,7 @@ class TLCS900H_Trace(ExecTrace):
 
     def disasm_instruction(self, opcode):
         buf = "bug"
-        v = 0
+        v = opcode
         dasm = instructions[opcode]
 
         # Check for extended addressing modes
@@ -1708,11 +1708,11 @@ class TLCS900H_Trace(ExecTrace):
 
             elif opcode & 0x07 == 0x04:  # 0xD4
                 imm = self.fetch()
-                buf = "-%s" % allreg32[imm]
+                buf = "-%s" % allreg8[imm]
 
             elif opcode & 0x07 == 0x05:  # 0xD5
                 imm = self.fetch()
-                buf = "%s+" % allreg32[imm]
+                buf = "%s+" % allreg8[imm]
 
             else:
                 self.illegal_instruction(opcode)
@@ -1798,10 +1798,10 @@ class TLCS900H_Trace(ExecTrace):
 
         elif dasm[MNEMONIC] == "M_E8":
             if opcode & 0x08:
-                buf = reg16[opcode & 0x07]
+                buf = reg32[opcode & 0x07]
             else:
                 imm = self.fetch()
-                buf = allreg16[imm]
+                buf = allreg32[imm]
 
             v = self.fetch()
             dasm = mnemonic_e8[v]
