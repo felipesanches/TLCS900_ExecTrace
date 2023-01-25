@@ -1945,7 +1945,7 @@ class TLCS900H_Trace(ExecTrace):
 if not (len(sys.argv) == 2):
     sys.exit(f"usage: {sys.argv[0]} <rom_file>")
 
-entry_points = [0xef03c6]
+
 rom_file = sys.argv[1]
 disasm_dir = f"output"
 LABELED_CINEMATIC_ENTRIES = {}
@@ -1956,6 +1956,24 @@ RELOCATION_BLOCKS = (
     # physical,  logical, length 
     (0x000000,  0xe00000, 0x200000),
 )
+
+entry_points = []
+vector = 0x1FFF00
+int_num = 0
+rom = open(rom_file, "rb")
+while vector <= 0x1FFFB0:
+    rom.seek(vector)
+    address = ord(rom.read(1))
+    address = ord(rom.read(1)) << 8 | address
+    address = ord(rom.read(1)) << 16 | address
+    address = ord(rom.read(1)) << 24 | address
+    if address not in entry_points:
+        entry_points.append(address)
+        # print(f"{int_num}: {address:08x}")
+    int_num += 1
+    vector += 4
+rom.close()
+
 trace = TLCS900H_Trace(rom_file,
                        relocation_blocks=RELOCATION_BLOCKS,
                        subroutines=POSSIBLY_UNUSED_CODEBLOCKS.copy(),
