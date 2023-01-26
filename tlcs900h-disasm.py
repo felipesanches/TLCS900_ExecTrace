@@ -1443,7 +1443,8 @@ class TLCS900H_Trace(ExecTrace):
             return " %s" % mulreg16[v & 0x07]
 
         elif operand == "O_CC":
-            return " %s" % cond[v & 0x0F]
+            self.condition = cond[v & 0x0F]
+            return " %s" % self.condition
 
         elif operand == "O_CR8":
             imm = self.fetch()
@@ -1473,8 +1474,14 @@ class TLCS900H_Trace(ExecTrace):
             if(imm & 0x80):
                 imm = -0x100 + imm
             address = ((self.PC + imm) & 0xFFFFFF)
-            if dasm[MNEMONIC] in ["JR", "DJNZ"]:
+            if dasm[MNEMONIC] == "DJNZ":
                 self.conditional_branch(address)
+                return " " + self.getLabelName(address)
+            elif dasm[MNEMONIC] == "JR":
+                if self.condition == "T":
+                   self.unconditional_jump(address)
+                elif self.condition != "F":
+                   self.conditional_branch(address)
                 return " " + self.getLabelName(address)
             else:
                 return " 0x%06x" % (address)
@@ -1489,7 +1496,10 @@ class TLCS900H_Trace(ExecTrace):
                 self.subroutine(address)
                 return " " + self.getLabelName(address)
             elif dasm[MNEMONIC] == "JRL":
-                self.conditional_branch(address)
+                if self.condition == "T":
+                   self.unconditional_jump(address)
+                elif self.condition != "F":
+                   self.conditional_branch(address)
                 return " " + self.getLabelName(address)
             else:
                 return " 0x%06x" % (address)
@@ -1542,13 +1552,18 @@ class TLCS900H_Trace(ExecTrace):
                     return " " + self.getLabelName(value)
                 else:
                     print(f"WARNING at {self.PC:08X}:  CALL {value}")
+                    self.restart_from_another_entry_point()
                     return f" {value}"
             if dasm[MNEMONIC] == "JP":
                 if isinstance(value, int):
-                    self.conditional_branch(value)
+                    if self.condition == "T":
+                       self.unconditional_jump(value)
+                    elif self.condition != "F":
+                       self.conditional_branch(value)
                     return " " + self.getLabelName(value)
                 else:
-                    print(f"WARNING at {self.PC:08X}:  JP cond {value}")
+                    print(f"WARNING at {self.PC:08X}:  JP {self.condition} {value}")
+                    self.restart_from_another_entry_point()
                     return f" {value}"
             elif dasm[MNEMONIC] == "LDA":
                 return " %s" % getVariableName(value)
