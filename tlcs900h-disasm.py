@@ -1423,7 +1423,6 @@ class TLCS900H_Trace(ExecTrace):
         return header
 
     def format_operand(self, opcode, operand, dasm, value, v):
-
         if operand == None:
             return ""
 
@@ -1551,8 +1550,11 @@ class TLCS900H_Trace(ExecTrace):
                     self.subroutine(value)
                     return " " + self.getLabelName(value)
                 else:
-                    print(f"WARNING at {self.PC:08X}:  CALL {value}")
-                    self.restart_from_another_entry_point()
+                    if self.PC not in self.jump_table_from:
+                        self.count_warns += 1
+                        print(f"WARNING at {self.PC:08X}:  CALL {value}")
+                    #self.restart_from_another_entry_point()
+                    self.return_from_subroutine()
                     return f" {value}"
             if dasm[MNEMONIC] == "JP":
                 if isinstance(value, int):
@@ -1562,8 +1564,11 @@ class TLCS900H_Trace(ExecTrace):
                        self.conditional_branch(value)
                     return " " + self.getLabelName(value)
                 else:
-                    print(f"WARNING at {self.PC:08X}:  JP {self.condition} {value}")
-                    self.restart_from_another_entry_point()
+                    if self.PC not in self.jump_table_from:
+                        self.count_warns += 1
+                        print(f"WARNING at {self.PC:08X}:  JP {self.condition} {value}")
+                    #self.restart_from_another_entry_point()
+                    self.return_from_subroutine()
                     return f" {value}"
             elif dasm[MNEMONIC] == "LDA":
                 return " %s" % getVariableName(value)
@@ -1973,9 +1978,70 @@ RELOCATION_BLOCKS = (
 )
 
 entry_points = []
+rom = open(rom_file, "rb")
+jump_table_from = []
+def read_jump_table(called_from, base_addr, num_entries):
+    global entry_points
+    global jump_tables
+    if called_from not in jump_table_from:
+        jump_table_from.append(called_from)
+    for n in range(num_entries):
+        rom.seek((base_addr & 0x1FFFFF) + n*4)
+        address = ord(rom.read(1))
+        address = ord(rom.read(1)) << 8 | address
+        address = ord(rom.read(1)) << 16 | address
+        address = ord(rom.read(1)) << 24 | address
+        if address not in entry_points:
+            entry_points.append(address)
+
+
+def ignore_jump_table(called_from):
+    if called_from not in jump_table_from:
+        jump_table_from.append(called_from)
+
+
+def register_jump_table_addresses(called_from, addresses):
+    global entry_points
+    global jump_tables
+    # print(f"from: {hex(called_from)}")
+    # print(list(map(hex, addresses)))
+
+    if called_from not in jump_table_from:
+        jump_table_from.append(called_from)
+
+    for address in addresses:
+        if address not in entry_points:
+            entry_points.append(address)
+
+
+read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
+read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
+ignore_jump_table(called_from=0xFC44EC)
+read_jump_table(called_from=0xfcf760, base_addr=0xfcf761, num_entries=8)
+
+#custom parsing another format of jump_table:
+register_jump_table_addresses(called_from=0xF46524,
+                              addresses=[0xF46524 + offs
+                                         for offs in [0x0000, 0x000e, 0x001c,
+                                                      0x0033, 0x003c, 0x0047]])
+
+read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
+
+#custom parsing another format of jump_table:
+register_jump_table_addresses(called_from=0xFCD4ED,
+                              addresses=[0xfcd9bd,    # Addresses read from
+                                         0xfcd9c1,    # eight 32-bit entries
+                                         0xfcd9ff,    # located at 0xEE10D0
+                                         0xfcda43,
+                                         0xfcdaa6,
+                                         0xfcdaeb,
+                                         0xfcdb44,
+                                         0xfcdb67])
+
+
+# TODO: Move this to the TLCS900_Trace class, as a load_interrupt_vector method.
 vector = 0x1FFF00
 int_num = 0
-rom = open(rom_file, "rb")
 while vector <= 0x1FFFB0:
     rom.seek(vector)
     address = ord(rom.read(1))
@@ -1989,15 +2055,23 @@ while vector <= 0x1FFFB0:
     vector += 4
 rom.close()
 
+
+# TODO: use jump_table_from on the ExecTrace class
+#       to nor report jump tables that were already documented
+
 trace = TLCS900H_Trace(rom_file,
                        relocation_blocks=RELOCATION_BLOCKS,
                        subroutines=POSSIBLY_UNUSED_CODEBLOCKS.copy(),
                        labels=KNOWN_LABELS.copy(),
                        loglevel=0)
+trace.jump_table_from = jump_table_from
+trace.count_warns = 0
 trace.run(entry_points)
 for ep in entry_points:
     trace.register_label(ep)
 #trace.print_ranges()
 #trace.print_grouped_ranges()
 
+print(f"Emitted {trace.count_warns} warnings.")
 trace.save_disassembly_listing(f"{rom_file}.asm")
+
