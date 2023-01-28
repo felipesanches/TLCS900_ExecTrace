@@ -1545,7 +1545,7 @@ class TLCS900H_Trace(ExecTrace):
             return ", 0x%08x" % imm
 
         elif operand == "O_M":
-            if dasm[MNEMONIC] == "CALL":
+            if dasm[MNEMONIC] == "CALL" and self.condition != "F":
                 if isinstance(value, int):
                     self.subroutine(value)
                     return " " + self.getLabelName(value)
@@ -1553,8 +1553,6 @@ class TLCS900H_Trace(ExecTrace):
                     if self.PC not in self.jump_table_from:
                         self.count_warns += 1
                         print(f"WARNING at {self.PC:08X}:  CALL {value}")
-                    #self.restart_from_another_entry_point()
-                    self.return_from_subroutine()
                     return f" {value}"
             if dasm[MNEMONIC] == "JP":
                 if isinstance(value, int):
