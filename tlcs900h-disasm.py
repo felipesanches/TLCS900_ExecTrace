@@ -2045,6 +2045,8 @@ read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32) # Code
 
 read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8) # note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
 read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
+read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
+
 
 # TODO: Move this to the TLCS900_Trace class, as a load_interrupt_vector method.
 vector = 0x1FFF00
