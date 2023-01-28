@@ -2041,6 +2041,8 @@ register_jump_table_addresses(called_from=0xFE137D,
                                                       0x49, 0x57, 0x65, 0x73, 0x81,
                                                       0x8f, 0x9d, 0x9d, 0xab]])
 
+read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
+
 
 
 
