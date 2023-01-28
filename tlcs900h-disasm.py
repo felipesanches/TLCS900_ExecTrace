@@ -2017,26 +2017,31 @@ def register_jump_table_addresses(called_from, addresses):
 read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
 read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
 ignore_jump_table(called_from=0xFC44EC)
-read_jump_table(called_from=0xfcf760, base_addr=0xfcf761, num_entries=8)
+read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
 
 #custom parsing another format of jump_table:
 register_jump_table_addresses(called_from=0xF46524,
                               addresses=[0xF46524 + offs
-                                         for offs in [0x0000, 0x000e, 0x001c,
-                                                      0x0033, 0x003c, 0x0047]])
+                                         for offs in [0x0000, 0x000E, 0x001C,
+                                                      0x0033, 0x003C, 0x0047]])
 
 read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
 
 #custom parsing another format of jump_table:
 register_jump_table_addresses(called_from=0xFCD4ED,
-                              addresses=[0xfcd9bd,    # Addresses read from
-                                         0xfcd9c1,    # eight 32-bit entries
-                                         0xfcd9ff,    # located at 0xEE10D0
-                                         0xfcda43,
-                                         0xfcdaa6,
-                                         0xfcdaeb,
-                                         0xfcdb44,
-                                         0xfcdb67])
+                              addresses=[0xFCD9BD,    # Addresses read from
+                                         0xFCD9C1,    # eight 32-bit entries
+                                         0xFCD9FF,    # located at 0xEE10D0
+                                         0xFCDA43,
+                                         0xFCDAA6,
+                                         0xFCDAEB,
+                                         0xFCDB44,
+                                         0xFCDB67])
+
+read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16) # Code does not seem to check limits of this table.
+read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32) # Code does not seem to check limits of this table.
+                                                                          # Also, it forbids address 0xFDECEF even though it
+                                                                          # is not present in the table.
 
 
 # TODO: Move this to the TLCS900_Trace class, as a load_interrupt_vector method.
