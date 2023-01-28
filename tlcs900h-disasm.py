@@ -2026,18 +2026,7 @@ register_jump_table_addresses(called_from=0xF46524,
                                                       0x0033, 0x003C, 0x0047]])
 
 read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xFCD4ED,
-                              addresses=[0xFCD9BD,    # Addresses read from
-                                         0xFCD9C1,    # eight 32-bit entries
-                                         0xFCD9FF,    # located at 0xEE10D0
-                                         0xFCDA43,
-                                         0xFCDAA6,
-                                         0xFCDAEB,
-                                         0xFCDB44,
-                                         0xFCDB67])
-
+read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
 read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16) # Code does not seem to check limits of this table.
 read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32) # Code does not seem to check limits of this table.
                                                                           # Also, it forbids address 0xFDECEF even though it
