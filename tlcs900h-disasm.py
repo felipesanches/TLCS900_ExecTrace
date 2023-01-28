@@ -2043,7 +2043,12 @@ register_jump_table_addresses(called_from=0xFE137D,
 
 read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
 
-
+#custom parsing another format of jump_table:
+register_jump_table_addresses(called_from=0xFEEB97,
+                              addresses=[0xFEEB97 + offs
+                                         # offs located at 0xEED3D2
+                                         for offs in [0x00, 0x05, 0x0a,
+                                                      0x0f, 0x2d, 0x34]])
 
 
 
