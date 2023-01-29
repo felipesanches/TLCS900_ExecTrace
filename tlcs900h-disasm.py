@@ -2071,6 +2071,7 @@ read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_
 read_jump_table_16bit_offsets(called_from=0xF46524, base_addr=0xF46524, offsets_addr=0xE44A42, num_entries=8)
 read_jump_table_16bit_offsets(called_from=0xF4677E, base_addr=0xF4677E, offsets_addr=0xE44A52, num_entries=11)
 read_jump_table_16bit_offsets(called_from=0xF4670F, base_addr=0xF4670F, offsets_addr=0xE44A6A, num_entries=15)
+read_jump_table_16bit_offsets(called_from=0xF96DD6, base_addr=0xF96DD6, offsets_addr=0xEA98B2, num_entries=12)
 read_jump_table_16bit_offsets(called_from=0xFE137D, base_addr=0xFE137D, offsets_addr=0xEE8F06, num_entries=14)
 read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_addr=0xEED3C6, num_entries=6)
 read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
