@@ -1980,7 +1980,6 @@ rom = open(rom_file, "rb")
 jump_table_from = []
 def read_jump_table(called_from, base_addr, num_entries):
     global entry_points
-    global jump_tables
     if called_from not in jump_table_from:
         jump_table_from.append(called_from)
     for n in range(num_entries):
@@ -2000,7 +1999,6 @@ def ignore_jump_table(called_from, base_addr):
 
 def register_jump_table_addresses(called_from, addresses):
     global entry_points
-    global jump_tables
     # print(f"from: {hex(called_from)}")
     # print(list(map(hex, addresses)))
 
@@ -2115,6 +2113,11 @@ for ep in entry_points:
 #trace.print_ranges()
 #trace.print_grouped_ranges()
 
-print(f"Emitted {trace.count_warns} warnings.")
+total = len(jump_table_from) + trace.count_warns
+progress = len(jump_table_from) / total
+print(f"Inspected {len(jump_table_from)} documented jump tables emitting {trace.count_warns} warnings.")
+print(f"There are at least {len(jump_table_from) + trace.count_warns} jump tables.")
+print(f"Current documentation progress: {100*progress:.2f}%")
+
 trace.save_disassembly_listing(f"{rom_file}.asm")
 
