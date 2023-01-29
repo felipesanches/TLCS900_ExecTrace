@@ -2084,8 +2084,7 @@ register_jump_table_addresses(called_from=0xEF4784, # 8 entries
                                                       0x43, 0x5b, 0x76, 0x9a]])
 
 read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1) # a single entry ?! (looks like a longer, 4-entries table)
-
-
+read_jump_table(called_from=0xEF0D64, base_addr=0xEF0D64, num_entries=3)
 
 
 # TODO: Move this to the TLCS900_Trace class, as a load_interrupt_vector method.
