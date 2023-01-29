@@ -8,3 +8,7 @@ More info at https://forum.fiozera.com.br/t/technics-kn5000-homebrew-development
 
 Also please take a look at https://github.com/felipesanches/kn5000_homebrew
 
+----
+**NOTE:** If you want to use this for disassembling anything other than the KN5000 program ROM, please help me refactor the code. For now generic TLCS900 code is mixed with KN5000-related research. If nobody does it, I'll put the effort later to make the code generally useful for everybody.
+----
+
