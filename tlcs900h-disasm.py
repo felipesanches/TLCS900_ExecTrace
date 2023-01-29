@@ -2011,76 +2011,60 @@ def register_jump_table_addresses(called_from, addresses):
         if address not in entry_points:
             entry_points.append(address)
 
+def read_addresses_with_16bit_offsets(base_addr, offsets_addr, num_entries):
+    addresses = []
+    for i in range(num_entries):
+        rom.seek((offsets_addr & 0x1fffff) + 2*i)
+        offset = ord(rom.read(1))
+        offset = (ord(rom.read(1)) << 8) | offset
+        addresses.append(base_addr + offset)
+    return addresses
+
+
+def read_jump_table_16bit_offsets(called_from, base_addr, offsets_addr, num_entries):
+    addresses = read_addresses_with_16bit_offsets(base_addr, offsets_addr, num_entries)
+    register_jump_table_addresses(called_from, addresses)
+
+
+for code_test in (
+    (0xFEEB97, 0xEED3D2, [0x00, 0x05, 0x0a, 0x0f, 0x2d, 0x34]),
+    (0xF46524, 0xE44A42, [0x00, 0x33, 0x47, 0x47, 0x0e, 0x33, 0x1c, 0x3c]),
+    (0xFE137D, 0xEE8F06, [0x00, 0x0f, 0x1e, 0x2d, 0x3b, 0x49, 0x57, 0x65, 0x73, 0x81, 0x8f, 0x9d, 0x9d, 0xab]),
+    (0xFEEB06, 0xEED3C6, [0x00, 0x08, 0x12, 0x1c, 0x39, 0x40]),
+    (0xF4677E, 0xE44A52, [0x00, 0x34, 0x06, 0x0c, 0x12, 0x18, 0x1e, 0x24, 0x34, 0x2a, 0x34]),
+    (0xF4670F, 0xe44a6a, [0x00, 0xa3, 0x07, 0x0e, 0x15, 0x1c, 0x23, 0x29, 0xa3, 0x2f, 0x35, 0x3b, 0x41, 0x47, 0x4d]),
+    (0xEF4784, 0xE00178, [0x00, 0xa6, 0x20, 0xa6, 0x43, 0x5b, 0x76, 0x9a])):
+    base_address, offsets_addr, offsets = code_test
+    num_entries = len(offsets)
+    addresses = read_addresses_with_16bit_offsets(base_address, offsets_addr, num_entries)
+#    print(hex(base_address))
+#    print(list(map(hex, addresses)))
+#    print(list(map(hex, [base_address + offs for offs in offsets])))
+#    print("")
+    assert addresses == [base_address + offs for offs in offsets]
+
 
 read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
 read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
 ignore_jump_table(called_from=0xFC44EC)
 read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xF46524,
-                              addresses=[0xF46524 + offs
-                                         for offs in [0x0000, 0x000E, 0x001C,
-                                                      0x0033, 0x003C, 0x0047]])
-
+read_jump_table_16bit_offsets(called_from=0xF46524, base_addr=0xF46524, offsets_addr=0xE44A42, num_entries=8)
 read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
 read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
-read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16) # Code does not seem to check limits of this table.
-read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32) # Code does not seem to check limits of this table.
-                                                                          # Also, it forbids address 0xFDECEF even though it
-                                                                          # is not present in the table.
-
-read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8) # note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
+read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16)  # Code does not seem to check limits of this table.
+read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32)  # Code does not seem to check limits of this table.
+                                                                           # Also, it forbids address 0xFDECEF even though it
+                                                                           # is not present in the table.
+read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8) # Note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
 read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
 read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xFE137D,
-                              addresses=[0xFE137D + offs
-                                         for offs in [0x00, 0x0f, 0x1e, 0x2d, 0x3b,
-                                                      0x49, 0x57, 0x65, 0x73, 0x81,
-                                                      0x8f, 0x9d, 0x9d, 0xab]])
-
+read_jump_table_16bit_offsets(called_from=0xFE137D, base_addr=0xFE137D, offsets_addr=0xEE8F06, num_entries=14)
 read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xFEEB97,
-                              addresses=[0xFEEB97 + offs
-                                         # offs located at 0xEED3D2
-                                         for offs in [0x00, 0x05, 0x0a,
-                                                      0x0f, 0x2d, 0x34]])
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xFEEB06,
-                              addresses=[0xFEEB06 + offs
-                                         # offs located at 0xEED3C6
-                                         for offs in [0x00, 0x08, 0x12,
-                                                      0x1c, 0x39, 0x40]])
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xF4677E, # 11 entries
-                              addresses=[0xF4677E + offs
-                                         # offs located at 0xE44A52
-                                         for offs in [0x00, 0x34, 0x06, 0x0c,
-                                                      0x12, 0x18, 0x1e, 0x24,
-                                                      0x34, 0x2a, 0x34]])
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xF4670F, # 15 entries
-                              addresses=[0xF4670F + offs
-                                         # offs located at 0xe44a6a
-                                         for offs in [0x00, 0xa3, 0x07, 0x0e,
-                                                      0x15, 0x1c, 0x23, 0x29,
-                                                      0xa3, 0x2f, 0x35, 0x3b,
-                                                      0x41, 0x47, 0x4d]])
-
-#custom parsing another format of jump_table:
-register_jump_table_addresses(called_from=0xEF4784, # 8 entries
-                              addresses=[0xEF4784 + offs
-                                         # offs located at 0xE00178
-                                         for offs in [0x00, 0xa6, 0x20, 0xa6,
-                                                      0x43, 0x5b, 0x76, 0x9a]])
-
+read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
+read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_addr=0xEED3C6, num_entries=6)
+read_jump_table_16bit_offsets(called_from=0xF4677E, base_addr=0xF4677E, offsets_addr=0xE44A52, num_entries=11)
+read_jump_table_16bit_offsets(called_from=0xF4670F, base_addr=0xF4670F, offsets_addr=0xe44a6a, num_entries=15)
+read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_addr=0xE00178, num_entries=8)
 read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1) # a single entry ?! (looks like a longer, 4-entries table)
 read_jump_table(called_from=0xEF0D64, base_addr=0xEF0D64, num_entries=3)
 read_jump_table(called_from=0xEF0DA5, base_addr=0xEF0DA5, num_entries=16)
