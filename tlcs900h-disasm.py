@@ -1993,7 +1993,7 @@ def read_jump_table(called_from, base_addr, num_entries):
             entry_points.append(address)
 
 
-def ignore_jump_table(called_from):
+def ignore_jump_table(called_from, base_addr):
     if called_from not in jump_table_from:
         jump_table_from.append(called_from)
 
@@ -2044,8 +2044,6 @@ for code_test in (
     assert addresses == [base_address + offs for offs in offsets]
 
 
-ignore_jump_table(called_from=0xFC44EC)
-
 # Sorted by base_addr:
 read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
 read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
@@ -2061,6 +2059,8 @@ read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
 read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
 read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16)  # Code does not seem to check limits of this table.
 read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1)  # A single entry ?! (looks like a longer, 4-entries table)
+read_jump_table(called_from=0xFC44EC, base_addr=0xFC4489, num_entries=0)  # FIXME: indexed by variable at 0x8D8A
+                                                                          # unknown table-length (maybe 128 entries?), potential overflow
 read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
 read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8)  # Note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
 read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
