@@ -2084,14 +2084,9 @@ register_jump_table_addresses(called_from=0xEF4784, # 8 entries
 read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1) # a single entry ?! (looks like a longer, 4-entries table)
 read_jump_table(called_from=0xEF0D64, base_addr=0xEF0D64, num_entries=3)
 read_jump_table(called_from=0xEF0DA5, base_addr=0xEF0DA5, num_entries=16)
-
-
-
-
-
-
-
-
+read_jump_table(called_from=0xFDE007, base_addr=0xEE8CF4, num_entries=32) # But it seems to be able to index up to 256 without checking limits :-O
+                                                                          # Potential overflow to run arbitrary code in low-RAM addresses
+                                                                          # if variable 0x8D34 is ever set to more than 0x1F
 
 
 
