@@ -2069,6 +2069,11 @@ read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
 read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
 read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
 
+register_jump_table_addresses(called_from=0xFAA49B, addresses=[0xF6A95E,   # TODO: review this.
+                                                               0xF6A975,   # There may be more routines that call
+                                                               0xF6A98C])  # this one providing different addresses.
+
+
 # Sorted by offsets_addr:
 read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_addr=0xE00178, num_entries=8)
 read_jump_table_16bit_offsets(called_from=0xF46524, base_addr=0xF46524, offsets_addr=0xE44A42, num_entries=8)
