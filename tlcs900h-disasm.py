@@ -2057,6 +2057,14 @@ register_jump_table_addresses(called_from=0xFEEB06,
                                          for offs in [0x00, 0x08, 0x12,
                                                       0x1c, 0x39, 0x40]])
 
+#custom parsing another format of jump_table:
+register_jump_table_addresses(called_from=0xF4677E, # 11 entries
+                              addresses=[0xF4677E + offs
+                                         # offs located at 0xE44A52
+                                         for offs in [0x00, 0x34, 0x06, 0x0c,
+                                                      0x12, 0x18, 0x1e, 0x24,
+                                                      0x34, 0x2a, 0x34]])
+
 # TODO: Move this to the TLCS900_Trace class, as a load_interrupt_vector method.
 vector = 0x1FFF00
 int_num = 0
