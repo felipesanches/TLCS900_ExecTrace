@@ -2062,6 +2062,7 @@ read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1)  # A si
 read_jump_table(called_from=0xFC44EC, base_addr=0xFC4489, num_entries=0)  # FIXME: indexed by variable at 0x8D8A
                                                                           # unknown table-length (maybe 128 entries?), potential overflow
 read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
+read_jump_table(called_from=0xFC4963, base_addr=0xFC4965, num_entries=8)
 read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8)  # Note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
 read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
 read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
