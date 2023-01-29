@@ -2045,6 +2045,8 @@ for code_test in (
 # Sorted by base_addr:
 read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
 read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
+read_jump_table(called_from=0xFDA254, base_addr=0xEE4F52, num_entries=24)  # FIXME: Not sure if the length is validated.
+                                                                           #        The 24 first entries seem reasonable, though. Potential overflow.
 read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32)    # Code does not seem to check limits of this table.
                                                                              # Also, it forbids address 0xFDECEF even though it
                                                                              # is not present in the table.
@@ -2075,9 +2077,8 @@ read_jump_table_16bit_offsets(called_from=0xF96DD6, base_addr=0xF96DD6, offsets_
 read_jump_table_16bit_offsets(called_from=0xFE137D, base_addr=0xFE137D, offsets_addr=0xEE8F06, num_entries=14)
 read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_addr=0xEED3C6, num_entries=6)
 read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
-
-
-
+# TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
+#       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
 
 
 
