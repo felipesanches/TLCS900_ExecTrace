@@ -2047,6 +2047,17 @@ read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
 read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
 read_jump_table(called_from=0xFDA254, base_addr=0xEE4F52, num_entries=24)  # FIXME: Not sure if the length is validated.
                                                                            #        The 24 first entries seem reasonable, though. Potential overflow.
+
+# a few other routines with no limit checking, for the same jump table:
+read_jump_table(called_from=0xFDA09F, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA0D3, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA107, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA13B, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA16F, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA1A3, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA1E9, base_addr=0xEE4F52, num_entries=0)
+read_jump_table(called_from=0xFDA7F5, base_addr=0xEE4F52, num_entries=0)
+
 read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32)    # Code does not seem to check limits of this table.
                                                                              # Also, it forbids address 0xFDECEF even though it
                                                                              # is not present in the table.
@@ -2072,7 +2083,6 @@ read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
 register_jump_table_addresses(called_from=0xFAA49B, addresses=[0xF6A95E,   # TODO: review this.
                                                                0xF6A975,   # There may be more routines that call
                                                                0xF6A98C])  # this one providing different addresses.
-
 
 # Sorted by offsets_addr:
 read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_addr=0xE00178, num_entries=8)
