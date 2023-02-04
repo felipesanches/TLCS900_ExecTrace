@@ -16,7 +16,6 @@ if not (len(sys.argv) == 2):
 
 rom_file = sys.argv[1]
 disasm_dir = f"output"
-LABELED_CINEMATIC_ENTRIES = {}
 KNOWN_LABELS = {}
 POSSIBLY_UNUSED_CODEBLOCKS = {}
 
@@ -25,9 +24,60 @@ RELOCATION_BLOCKS = (
     (0x000000,  0xe00000, 0x200000),
 )
 
-entry_points = []
 rom = open(rom_file, "rb")
+entry_points = []
 jump_table_from = []
+
+def read_symbols(base_addr, num_symbols):
+    global entry_points
+    rom.seek(base_addr)
+    string_addresses = []
+    address = -1
+    for i in range(num_symbols+1):
+        address = ord(rom.read(1))
+        address = ord(rom.read(1)) << 8 | address
+        address = ord(rom.read(1)) << 16 | address
+        address = ord(rom.read(1)) << 24 | address
+        string_addresses.append(address)
+
+    print(hex(len(string_addresses)))
+
+    symbol_name = ""
+    symbol_names = []
+    while len(symbol_names) < num_symbols:
+        c = rom.read(1)
+        if ord(c) == 0xFF:
+            pass
+        elif ord(c) == 0:
+            symbol_names.append(symbol_name)
+            symbol_name = ""
+        else:
+            symbol_name += c.decode("utf8")
+
+    n = ord(rom.read(1))
+    n = (ord(rom.read(1)) << 8) | n
+    assert n == num_symbols
+
+
+    routine_addresses = []
+    address = -1
+    for i in range(num_symbols+1):
+        address = ord(rom.read(1))
+        address = ord(rom.read(1)) << 8 | address
+        address = ord(rom.read(1)) << 16 | address
+        address = ord(rom.read(1)) << 24 | address
+        routine_addresses.append(address)
+
+    print(hex(len(routine_addresses)))
+
+    print(len(symbol_names))
+    for i in range(num_symbols):
+        print(f"{routine_addresses[i]:06X}: {symbol_names[i]}")
+        KNOWN_LABELS[routine_addresses[i]] = symbol_names[i]
+        if routine_addresses[i] not in entry_points:
+            entry_points.append(routine_addresses[i])
+
+
 def read_jump_table(called_from, base_addr, num_entries):
     global entry_points
     if called_from not in jump_table_from:
@@ -145,6 +195,9 @@ read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_
 read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
 # TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
 #       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
+
+read_symbols(0xAEBB2, 0xBC)
+# read_symbols(0xAFA6E, 0xB0)
 
 rom.close()
 
