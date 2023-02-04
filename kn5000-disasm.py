@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-#
-# (c) 2022 Felipe Correa da Silva Sanches <juca@members.fsf.org>
+# (c) 2023 Felipe Correa da Silva Sanches <juca@members.fsf.org>
 # Licensed under GPL version 3 or later
 
 import os
