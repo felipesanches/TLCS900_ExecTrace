@@ -199,11 +199,88 @@ read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_
 read_symbols(0xAEBB2, 0xBC)
 # read_symbols(0xAFA6E, 0xB0)
 
+
+def read_32bit():
+    value = ord(rom.read(1))
+    value = ord(rom.read(1)) << 8 | value
+    value = ord(rom.read(1)) << 16 | value
+    value = ord(rom.read(1)) << 24 | value
+    return value
+
+def read_string(address):
+    rom.seek(address & 0x1FFFFF)
+    the_string = ""
+    while True:
+        c = rom.read(1)
+        if ord(c) != 0:
+            the_string += c.decode("utf8")
+        else:
+            return the_string
+
+
+def read_some_table(address):
+    """
+       Starting at 0x00eac9ee, ending at 0x00ead43e ()
+       NULL-terminated array of 24 byte entries:
+
+       [...]
+
+       0x00ead402 -> 0x00ead456: "IvIntWelcome"
+       0x00ead406 -> 0x00ead454: (0x00 0xFF)
+       0x00ead40a -> 0x00eac9d8 -> 0x00eac9dc: (0x00 0xFF)   # Are these null strings?
+
+       0x00ead40e -> 0x00f9c5fc (routine pointer?)
+       0x00ead412 -> 0x01600010
+       0x00ead416 -> 0x0004001a
+       0x00ead41a -> 0x00ead440: "VwUserBitmapByName"
+       0x00ead41e -> 0x00ead43e: "X"
+       0x00ead422 -> 0x00eac9de -> 0x00eac9e8: "file"
+
+       0x00ead426 -> 0x00000000
+       0x00ead42a -> 0x00000000
+       0x00ead42e -> 0x00000000
+       0x00ead432 -> 0x00000000
+       0x00ead436 -> 0x00000000
+       0x00ead43a -> 0x00000000
+    """
+    global entry_points
+    n = 0
+    while True:
+        rom.seek((address & 0x1FFFFF) + n*24)
+        routine_address = read_32bit()
+        unknown1 = read_32bit()
+        unknown2 = read_32bit()
+        name1 = read_32bit()
+        name2 = read_32bit()
+        name3 = read_32bit()
+
+        if routine_address == 0 and \
+           unknown1 == 0 and \
+           unknown2 == 0 and \
+           name1 == 0 and \
+           name2 == 0 and \
+           name3 == 0:
+            break
+
+        name1 = read_string(name1)
+        name2 = read_string(name2)
+
+        rom.seek(name3 & 0x1FFFFF)
+        name3 = read_string(read_32bit())
+        print(f"{n}: '0x{routine_address:08X}' '{name1}' '{name2}' '{name3}'")
+        n += 1
+
+        KNOWN_LABELS[routine_address] = name1
+        if routine_address not in entry_points:
+            entry_points.append(routine_address)
+
+
+read_some_table(0x00eac9ee)
 rom.close()
 
 
 # TODO: use jump_table_from on the ExecTrace class
-#       to nor report jump tables that were already documented
+#       to not report jump tables that were already documented
 
 trace = TLCS900H_Trace(rom_file,
                        relocation_blocks=RELOCATION_BLOCKS,
