@@ -1972,6 +1972,39 @@ class TLCS900H_Trace(ExecTrace):
                 entry_points.append(address)
                 self.schedule_entry_point(address, needs_label=True)
 
+    def probe_neogeopocket_rom(self):
+        reloc_index, header_addr = self.rom_address(0)
+        signature = self.rom[reloc_index][header_addr + 0x00:28].decode("utf-8")
+        startup = self.rom[reloc_index][header_addr + 0x1c:header_addr + 0x20]
+        cart_name = self.rom[reloc_index][header_addr + 0x24:header_addr + 0x24+13].decode("utf-8")
+
+        if signature in ["COPYRIGHT BY SNK CORPORATION",
+                         " LICENSED BY SNK CORPORATION"]:
+            self.relocation_blocks = (
+                # physical,  logical, length
+                (0x000000,  0x200000, 0x200000),
+            )
+
+            address = startup[0]
+            address = startup[1] << 8 | address
+            address = startup[2] << 16 | address
+            address = startup[3] << 24 | address
+
+            print("Detected a Neo Geo Pocket Color cartridge ROM.")
+            print(f"ROM code startup address is 0x{address:06X}");
+            print(f"The cart name is '{cart_name}'");
+            self.schedule_entry_point(address, needs_label=True)
+
+        else:
+            print("FIXME: Loading Technics KN5000-specific relocation map.")
+            # TODO: let the user customize this.
+            #       For now I'm using the KN5000-specific relocation-map here.
+            self.relocation_blocks = (
+                # physical,  logical, length 
+                (0x000000,  0xe00000, 0x200000),
+            )
+            self.load_interrupt_vector()
+
 
 if __name__ == '__main__':
     if not (len(sys.argv) == 2):
@@ -1980,16 +2013,15 @@ if __name__ == '__main__':
 
     rom_file = sys.argv[1]
 
-    # TODO: let the user customize this:
-    RELOCATION_BLOCKS = (
+    DEFAULT_RELOCATION = (
         # physical,  logical, length 
-        (0x000000,  0xe00000, 0x200000),
+        (0x000000,  0x000000, 0x200000),
     )
 
     trace = TLCS900H_Trace(rom_file,
-                           relocation_blocks=RELOCATION_BLOCKS,
+                           relocation_blocks=DEFAULT_RELOCATION,
                            loglevel=0)
-    trace.load_interrupt_vector()
+    trace.probe_neogeopocket_rom()
     trace.count_warns = 0
     trace.jump_table_from = []
     trace.run(entry_points=[])  # all entry-points are loaded from the interrupt vector
