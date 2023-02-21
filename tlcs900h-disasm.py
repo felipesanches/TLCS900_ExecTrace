@@ -1959,6 +1959,53 @@ class TLCS900H_Trace(ExecTrace):
         return dasm_string
 
     def load_interrupt_vector(self):
+        INTERRUPT_TABLE_NAMES = [
+            "RESET",                 # swi 0 instruction or RESET
+            "SWI1_HANDLER",          # swi 1 instruction or default vector
+            "SWI2_HANDLER",          # swi 2 instruction or INT-UNDEF
+            "SWI3_HANDLER",          # swi 3 instruction
+            "SWI4_HANDLER",          # swi 4 instruction
+            "SWI5_HANDLER",          # swi 5 instruction
+            "SWI6_HANDLER",          # swi 6 instruction
+            "SWI7_HANDLER",          # swi 7 instruction
+            "NMI_HANDLER",           # /NMI Pin
+            "INTWD_HANDLER",         # Watch-dog timer
+            "INT0_HANDLER",          # INT0 Pin
+            "INT4_HANDLER",          # INT4 Pin
+            "INT5_HANDLER",          # INT5 Pin
+            "INT6_HANDLER",          # INT6 Pin
+            "INT7_HANDLER",          # INT7 Pin
+            "RESERVED_INT_HANDLER",  # (reserved)
+            "INT8_HANDLER",          # INT8 Pin
+            "INT9_HANDLER",          # INT9 Pin
+            "INTA_HANDLER",          # INTA Pin
+            "INTB_HANDLER",          # INTB Pin
+            "INTT0_HANDLER",         # 8-bit timer (Timer 0)
+            "INTT1_HANDLER",         # 8-bit timer (Timer 1)
+            "INTT2_HANDLER",         # 8-bit timer (Timer 2)
+            "INTT3_HANDLER",         # 8-bit timer (Timer 3)
+            "INTTR4_HANDLER",        # 16-bit timer (TReg 4)
+            "INTTR5_HANDLER",        # 16-bit timer (TReg 5)
+            "INTTR6_HANDLER",        # 16-bit timer (TReg 6)
+            "INTTR7_HANDLER",        # 16-bit timer (TReg 7)
+            "INTTR8_HANDLER",        # 16-bit timer (TReg 8)
+            "INTTR9_HANDLER",        # 16-bit timer (TReg 9)
+            "INTTRA_HANDLER",        # 16-bit timer (TReg A)
+            "INTTRB_HANDLER",        # 16-bit timer (TReg B)
+            "INTRX0_HANDLER",        # Serial Receive 0
+            "INTTX0_HANDLER",        # Serial Send 0
+            "INTRX1_HANDLER",        # Serial Receive 1
+            "INTTX1_HANDLER",        # Serial Send 1
+            "INTAD_HANDLER",         # AD conversion completion
+            "INTTC0",                # micro-DMA completion Ch.0
+            "INTTC1",                # micro-DMA completion Ch.1
+            "INTTC2",                # micro-DMA completion Ch.2
+            "INTTC3",                # micro-DMA completion Ch.3
+            "INTTC4",                # micro-DMA completion Ch.4
+            "INTTC5",                # micro-DMA completion Ch.5
+            "INTTC6",                # micro-DMA completion Ch.6
+            "INTTC7",                # micro-DMA completion Ch.7
+        ]
         reloc_index, vector = self.rom_address(0xFFFF00)
         entry_points = []
         for int_num in range(0x2D): # FIXME: what are all entries we should read from the table?
@@ -1970,6 +2017,8 @@ class TLCS900H_Trace(ExecTrace):
             print(f"[VECTOR 0x{v:06X}]  Handler for interrupt 0x{int_num:02X} at 0x{address:08X}")
             if address not in entry_points:
                 entry_points.append(address)
+                self.register_label(address) # TODO: Fix ExexTrace handling of labels
+                self.labels[address] = INTERRUPT_TABLE_NAMES[int_num]
                 self.schedule_entry_point(address, needs_label=True)
 
     def probe_neogeopocket_rom(self):
