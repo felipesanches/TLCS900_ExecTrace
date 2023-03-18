@@ -101,8 +101,12 @@ def register_jump_table_addresses(called_from, addresses):
     # print(f"from: {hex(called_from)}")
     # print(list(map(hex, addresses)))
 
-    if called_from not in jump_table_from:
-        jump_table_from.append(called_from)
+    if called_from:
+        if called_from not in jump_table_from:
+            jump_table_from.append(called_from)
+    else:
+        for address in addresses:
+            print(f"TODO: FIX THIS HACK: {hex(address)} is an additional entry-point lacking documentation of who calls it!")
 
     for address in addresses:
         if address not in entry_points:
@@ -195,8 +199,22 @@ read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_
 # TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
 #       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
 
-read_symbols(0xAEBB2, 0xBC)
+# Experimental: read_symbols(0xAEBB2, 0xBC)
 # read_symbols(0xAFA6E, 0xB0)
+
+## register_jump_table_addresses(called_from=None, addresses=[0xF6EFEC])
+## trying to find who calls the save-user-settings-to-floppy backup routine.
+## TODO: Study routine LABEL_F6E7F8
+
+# These 19 base_addresses are in a list at 0xEE8C7E:
+for b in [0xEF1235, 0xEED52B, 0xE1FFB6, 0xFCF962,
+          0xEE2F26, 0xEE1574, 0xEDB2E4, 0xEA066C,
+          0xEB7932, 0xEDA02C, 0xED9D1E, 0xEED3DE,
+          0xE44636, 0xF532A1, 0xF6F068, 0xF5E907,
+          0xEED57D, 0xE9FCE2, 0xEEC288]:
+    read_jump_table(called_from=0xFDDB79, base_addr=b, num_entries=4) # Among all invokations of routine at LABEL_FDDB46,
+                                                                      # the only values passed via WA register are 0,1,2 or 3.
+                                                                      # So, this means each of these small jump-tables have exactly 4 entries.
 
 
 def read_32bit():
@@ -274,7 +292,7 @@ def read_some_table(address):
             entry_points.append(routine_address)
 
 
-read_some_table(0x00eac9ee)
+# Experimental: read_some_table(0x00eac9ee)
 rom.close()
 
 
