@@ -27,7 +27,7 @@ rom = open(rom_file, "rb")
 entry_points = []
 jump_table_from = []
 
-def read_symbols(base_addr, num_symbols):
+def read_n_symbols(base_addr, num_symbols):
     global entry_points
     rom.seek(base_addr)
     string_addresses = []
@@ -75,6 +75,63 @@ def read_symbols(base_addr, num_symbols):
         KNOWN_LABELS[routine_addresses[i]] = symbol_names[i]
         if routine_addresses[i] not in entry_points:
             entry_points.append(routine_addresses[i])
+
+
+def read_some_symbols(base_addr):
+    global entry_points
+    rom.seek(base_addr)
+    pointers = []
+    address = -1
+    while True:
+        address = ord(rom.read(1))
+        address = ord(rom.read(1)) << 8 | address
+        address = ord(rom.read(1)) << 16 | address
+        address = ord(rom.read(1)) << 24 | address
+        if address == 0:
+            break
+        else:
+            pointers.append(address)
+
+    num_symbols = len(pointers)
+    print(f"num_symbols: {num_symbols}")
+
+    other_pointers = []
+    while len(other_pointers) < num_symbols+1:
+        address = ord(rom.read(1))
+        address = ord(rom.read(1)) << 8 | address
+        address = ord(rom.read(1)) << 16 | address
+        address = ord(rom.read(1)) << 24 | address
+        other_pointers.append(address)
+
+    num_other_pointers = len(other_pointers)
+    print(f"num_other_pointers: {num_other_pointers}")
+
+    assert ord(rom.read(1)) == 0x00
+    assert ord(rom.read(1)) == 0xFF
+
+    symbol_name = ""
+    symbol_names = []
+    while len(symbol_names) < num_symbols:
+        c = rom.read(1)
+        if ord(c) == 0xFF:
+            pass
+        elif ord(c) == 0:
+            symbol_names.append(symbol_name)
+            symbol_name = ""
+        else:
+            symbol_name += c.decode("utf8")
+
+    assert len(symbol_names) == len(pointers)
+    assert len(symbol_names) == len(other_pointers) - 1
+
+    symbol_names = list(reversed(symbol_names))
+    for i in range(num_symbols):
+        print(f"{pointers[i]:06X} / {other_pointers[i]:06X}: {symbol_names[i]}")
+
+        KNOWN_LABELS[pointers[i]] = symbol_names[i]
+        if pointers[i] not in entry_points:
+            entry_points.append(pointers[i])
+
 
 
 def read_jump_table(called_from, base_addr, num_entries):
@@ -199,8 +256,11 @@ read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_
 # TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
 #       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
 
-# Experimental: read_symbols(0xAEBB2, 0xBC)
-# read_symbols(0xAFA6E, 0xB0)
+# Experimental:
+read_some_symbols(0x814F4)
+
+# Experimental: read_n_symbols(0xAEBB2, 0xBC)
+# read_n_symbols(0xAFA6E, 0xB0)
 
 ## register_jump_table_addresses(called_from=None, addresses=[0xF6EFEC])
 ## trying to find who calls the save-user-settings-to-floppy backup routine.
@@ -292,7 +352,8 @@ def read_some_table(address):
             entry_points.append(routine_address)
 
 
-# Experimental: read_some_table(0x00eac9ee)
+# Experimental:
+# read_some_table(0xEAC9EE)
 rom.close()
 
 
