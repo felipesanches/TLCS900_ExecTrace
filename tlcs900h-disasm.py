@@ -1533,6 +1533,9 @@ class TLCS900H_Trace(ExecTrace):
             if dasm[MNEMONIC] in ["CALL"]:
                 self.subroutine(address)
                 return " " + self.getLabelName(address)
+            elif dasm[MNEMONIC] in ["JP"]:
+                self.unconditional_jump(address)
+                return " " + self.getLabelName(address)
             else:
                 return ", 0x%06x" % imm
 
@@ -1557,7 +1560,10 @@ class TLCS900H_Trace(ExecTrace):
                 if isinstance(value, int):
                     if self.condition == "T":
                        self.unconditional_jump(value)
-                    elif self.condition != "F":
+                    elif self.condition == "F":
+                       print(f"IS THIS A BUG? Please review:"
+                             f" At {self.PC:08X}:  JP F {value:08X}")
+                    else:
                        self.conditional_branch(value)
                     return " " + self.getLabelName(value)
                 else:
@@ -2014,7 +2020,7 @@ class TLCS900H_Trace(ExecTrace):
             address = (self.rom[reloc_index][v + 1]) << 8 | address
             address = (self.rom[reloc_index][v + 2]) << 16 | address
             address = (self.rom[reloc_index][v + 3]) << 24 | address
-            print(f"[VECTOR 0x{v:06X}]  Handler for interrupt 0x{int_num:02X} at 0x{address:08X}")
+            print(f"[VECTOR 0x{v:06X}]  Handler for interrupt 0x{int_num:02X} [{INTERRUPT_TABLE_NAMES[int_num]}] at 0x{address:08X}")
             if address not in entry_points:
                 entry_points.append(address)
                 self.register_label(address) # TODO: Fix ExexTrace handling of labels
@@ -2023,9 +2029,9 @@ class TLCS900H_Trace(ExecTrace):
 
     def probe_neogeopocket_rom(self):
         reloc_index, header_addr = self.rom_address(0)
-        signature = self.rom[reloc_index][header_addr + 0x00:28].decode("utf-8")
+        signature = self.rom[reloc_index][header_addr + 0x00:28].decode("utf-8", "replace")
         startup = self.rom[reloc_index][header_addr + 0x1c:header_addr + 0x20]
-        cart_name = self.rom[reloc_index][header_addr + 0x24:header_addr + 0x24+13].decode("utf-8")
+        cart_name = self.rom[reloc_index][header_addr + 0x24:header_addr + 0x24+13].decode("utf-8", "replace")
 
         if signature in ["COPYRIGHT BY SNK CORPORATION",
                          " LICENSED BY SNK CORPORATION"]:

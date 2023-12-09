@@ -15,8 +15,11 @@ if not (len(sys.argv) == 2):
 
 rom_file = sys.argv[1]
 disasm_dir = f"output"
-KNOWN_LABELS = {}
+
+disasm_version10 = True
+
 POSSIBLY_UNUSED_CODEBLOCKS = {}
+KNOWN_LABELS = {}
 
 RELOCATION_BLOCKS = (
     # physical,  logical, length 
@@ -26,6 +29,8 @@ RELOCATION_BLOCKS = (
 rom = open(rom_file, "rb")
 entry_points = []
 jump_table_from = []
+
+
 
 def read_n_symbols(base_addr, num_symbols):
     global entry_points
@@ -79,6 +84,7 @@ def read_n_symbols(base_addr, num_symbols):
 
 def read_some_symbols(base_addr):
     global entry_points
+    print(f"Reading some symbols from address {base_addr}...")
     rom.seek(base_addr)
     pointers = []
     address = -1
@@ -106,8 +112,13 @@ def read_some_symbols(base_addr):
     num_other_pointers = len(other_pointers)
     print(f"num_other_pointers: {num_other_pointers}")
 
-    assert ord(rom.read(1)) == 0x00
-    assert ord(rom.read(1)) == 0xFF
+    if ord(rom.read(1)) != 0x00:
+        print("should be 0x00")
+        sys.exit(hex(rom.tell()))
+
+    if ord(rom.read(1)) != 0xFF:
+        print("should be 0xFF")
+        sys.exit(hex(rom.tell()))
 
     symbol_name = ""
     symbol_names = []
@@ -131,7 +142,6 @@ def read_some_symbols(base_addr):
         KNOWN_LABELS[pointers[i]] = symbol_names[i]
         if pointers[i] not in entry_points:
             entry_points.append(pointers[i])
-
 
 
 def read_jump_table(called_from, base_addr, num_entries):
@@ -183,98 +193,23 @@ def read_jump_table_16bit_offsets(called_from, base_addr, offsets_addr, num_entr
     addresses = read_addresses_with_16bit_offsets(base_addr, offsets_addr, num_entries)
     register_jump_table_addresses(called_from, addresses)
 
-
-for code_test in (
-    (0xEF4784, 0xE00178, [0x00, 0xa6, 0x20, 0xa6, 0x43, 0x5b, 0x76, 0x9a]),
-    (0xF46524, 0xE44A42, [0x00, 0x33, 0x47, 0x47, 0x0e, 0x33, 0x1c, 0x3c]),
-    (0xF4670F, 0xe44a6a, [0x00, 0xa3, 0x07, 0x0e, 0x15, 0x1c, 0x23, 0x29, 0xa3, 0x2f, 0x35, 0x3b, 0x41, 0x47, 0x4d]),
-    (0xF4677E, 0xE44A52, [0x00, 0x34, 0x06, 0x0c, 0x12, 0x18, 0x1e, 0x24, 0x34, 0x2a, 0x34]),
-    (0xFE137D, 0xEE8F06, [0x00, 0x0f, 0x1e, 0x2d, 0x3b, 0x49, 0x57, 0x65, 0x73, 0x81, 0x8f, 0x9d, 0x9d, 0xab]),
-    (0xFEEB06, 0xEED3C6, [0x00, 0x08, 0x12, 0x1c, 0x39, 0x40]),
-    (0xFEEB97, 0xEED3D2, [0x00, 0x05, 0x0a, 0x0f, 0x2d, 0x34])):
-    base_address, offsets_addr, offsets = code_test
-    num_entries = len(offsets)
-    addresses = read_addresses_with_16bit_offsets(base_address, offsets_addr, num_entries)
-#    print(hex(base_address))
-#    print(list(map(hex, addresses)))
-#    print(list(map(hex, [base_address + offs for offs in offsets])))
-#    print("")
-    assert addresses == [base_address + offs for offs in offsets]
-
-
-# Sorted by base_addr:
-read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
-read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
-read_jump_table(called_from=0xFDA254, base_addr=0xEE4F52, num_entries=24)  # FIXME: Not sure if the length is validated.
-                                                                           #        The 24 first entries seem reasonable, though. Potential overflow.
-
-# a few other routines with no limit checking, for the same jump table:
-read_jump_table(called_from=0xFDA09F, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA0D3, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA107, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA13B, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA16F, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA1A3, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA1E9, base_addr=0xEE4F52, num_entries=0)
-read_jump_table(called_from=0xFDA7F5, base_addr=0xEE4F52, num_entries=0)
-
-read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32)    # Code does not seem to check limits of this table.
-                                                                             # Also, it forbids address 0xFDECEF even though it
-                                                                             # is not present in the table.
-read_jump_table(called_from=0xFDE007, base_addr=0xEE8CF4, num_entries=32)  # This routine seems to be able to index up to 256 without checking limits :-O
-                                                                           # Potential overflow to run arbitrary code in low-RAM addresses
-                                                                           # if variable 0x8D34 is ever set to more than 0x1F
-read_jump_table(called_from=0xEF0D64, base_addr=0xEF0D64, num_entries=3)
-read_jump_table(called_from=0xEF0DA5, base_addr=0xEF0DA5, num_entries=16)
-read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
-read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
-read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16)  # Code does not seem to check limits of this table.
-read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1)  # A single entry ?! (looks like a longer, 4-entries table)
-read_jump_table(called_from=0xFC44EC, base_addr=0xFC4489, num_entries=0)  # FIXME: indexed by variable at 0x8D8A
-                                                                          # unknown table-length (maybe 128 entries?), potential overflow
-read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
-read_jump_table(called_from=0xFC4963, base_addr=0xFC4965, num_entries=8)
-read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8)  # Note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
-read_jump_table(called_from=0xFCB46E, base_addr=0xFCB46F, num_entries=8)
-read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
-read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
-read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
-
-register_jump_table_addresses(called_from=0xFAA49B, addresses=[0xF6A95E,   # TODO: review this.
-                                                               0xF6A975,   # There may be more routines that call
-                                                               0xF6A98C])  # this one providing different addresses.
-
-# Sorted by offsets_addr:
-read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_addr=0xE00178, num_entries=8)
-read_jump_table_16bit_offsets(called_from=0xF46524, base_addr=0xF46524, offsets_addr=0xE44A42, num_entries=8)
-read_jump_table_16bit_offsets(called_from=0xF4677E, base_addr=0xF4677E, offsets_addr=0xE44A52, num_entries=11)
-read_jump_table_16bit_offsets(called_from=0xF4670F, base_addr=0xF4670F, offsets_addr=0xE44A6A, num_entries=15)
-read_jump_table_16bit_offsets(called_from=0xF96DD6, base_addr=0xF96DD6, offsets_addr=0xEA98B2, num_entries=12)
-read_jump_table_16bit_offsets(called_from=0xFE137D, base_addr=0xFE137D, offsets_addr=0xEE8F06, num_entries=14)
-read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_addr=0xEED3C6, num_entries=6)
-read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
-# TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
-#       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
-
-# Experimental:
-read_some_symbols(0x814F4)
-
-# Experimental: read_n_symbols(0xAEBB2, 0xBC)
-# read_n_symbols(0xAFA6E, 0xB0)
-
-## register_jump_table_addresses(called_from=None, addresses=[0xF6EFEC])
-## trying to find who calls the save-user-settings-to-floppy backup routine.
-## TODO: Study routine LABEL_F6E7F8
-
-# These 19 base_addresses are in a list at 0xEE8C7E:
-for b in [0xEF1235, 0xEED52B, 0xE1FFB6, 0xFCF962,
-          0xEE2F26, 0xEE1574, 0xEDB2E4, 0xEA066C,
-          0xEB7932, 0xEDA02C, 0xED9D1E, 0xEED3DE,
-          0xE44636, 0xF532A1, 0xF6F068, 0xF5E907,
-          0xEED57D, 0xE9FCE2, 0xEEC288]:
-    read_jump_table(called_from=0xFDDB79, base_addr=b, num_entries=4) # Among all invokations of routine at LABEL_FDDB46,
-                                                                      # the only values passed via WA register are 0,1,2 or 3.
-                                                                      # So, this means each of these small jump-tables have exactly 4 entries.
+if disasm_version10:
+    for code_test in (
+        (0xEF4784, 0xE00178, [0x00, 0xa6, 0x20, 0xa6, 0x43, 0x5b, 0x76, 0x9a]),
+        (0xF46524, 0xE44A42, [0x00, 0x33, 0x47, 0x47, 0x0e, 0x33, 0x1c, 0x3c]),
+        (0xF4670F, 0xe44a6a, [0x00, 0xa3, 0x07, 0x0e, 0x15, 0x1c, 0x23, 0x29, 0xa3, 0x2f, 0x35, 0x3b, 0x41, 0x47, 0x4d]),
+        (0xF4677E, 0xE44A52, [0x00, 0x34, 0x06, 0x0c, 0x12, 0x18, 0x1e, 0x24, 0x34, 0x2a, 0x34]),
+        (0xFE137D, 0xEE8F06, [0x00, 0x0f, 0x1e, 0x2d, 0x3b, 0x49, 0x57, 0x65, 0x73, 0x81, 0x8f, 0x9d, 0x9d, 0xab]),
+        (0xFEEB06, 0xEED3C6, [0x00, 0x08, 0x12, 0x1c, 0x39, 0x40]),
+        (0xFEEB97, 0xEED3D2, [0x00, 0x05, 0x0a, 0x0f, 0x2d, 0x34])):
+        base_address, offsets_addr, offsets = code_test
+        num_entries = len(offsets)
+        addresses = read_addresses_with_16bit_offsets(base_address, offsets_addr, num_entries)
+    #    print(hex(base_address))
+    #    print(list(map(hex, addresses)))
+    #    print(list(map(hex, [base_address + offs for offs in offsets])))
+    #    print("")
+        assert addresses == [base_address + offs for offs in offsets]
 
 
 def read_32bit():
@@ -352,10 +287,153 @@ def read_some_table(address):
             entry_points.append(routine_address)
 
 
-# Experimental:
-# read_some_table(0xEAC9EE)
-rom.close()
+if disasm_version10:
+    # TODO: add this feature to ExecTrace:
+    VARIABLE_NAMES = {
+        0x043C00: "Offscreen_Video_Buffer",
+    }
 
+    KNOWN_LABELS = {
+        #0xE83DF8: "Start_Internal_Demo", # TODO: I am not sure about this one, yet!
+        0xEF04A1: "DRAM_related_short_pause",
+        0xEF04AC: "DRAM_related_short_pause_2",
+        0xEF0536: "We_seem_to_be_running_boot_ROM_code",
+        0xEF0B46: "Seems_to_copy_some_data_buffers",
+        0xEF18D7: "Copy_DE_words_from_XBC_to_XWA",
+        0xEF18E0: "Fill_memory_at_XWA_with_DE_words_of_BC_value",
+        0xEF23E8: "Start_8bit_Timer_3",
+        0xEF23EC: "Stop_and_Clear_8bit_Timer_3",
+        0xEF4B6B: "Infinite_Loop_at_EF4B6B", # Why?
+        0xEF5088: "Set_XWA_to_320_times_XDE",
+        0xEF5141: "Write_VGA_Register",
+        0xEF5157: "Read_VGA_Register",
+        0xEF55A7: "Some_VGA_setup",
+        0xF74942: "Draw_keybed_maybe_for_indicating_split_point",
+        0xF98001: "Check_for_Floppy_Disk_Change",
+        0xF98009: "Detected_Floppy_Disk_Change",
+        0xFB729E: "MainCPU_self_test_routines",
+        0xFB72EA: "Report_test_result_by_blinking_LED",
+        0xFB7348: "Test_DRAM_IC10_and_IC9",
+        0xFB7400: "Test_SRAM_IC21",
+        0xFB7328: "A_Short_Pause", # for how long?
+        0xFB7456: "Test_PROGRAM_and_TABLE_DATA_ROMs",
+            # Note:
+            # PROGRAM ROMs: IC6/IC4
+            # TABLE DATA ROMs: IC3/IC1
+        0xFB7561: "Test_Rhythm_data_ROM_IC14", #  (first 4 bytes at 0x0040_0000
+                                               #   must be “0x00, 0x01, 0x04, 0x05”)
+        0xFB75D4: "Test_Custom_data_ROM_IC19",
+        0xFB763A: "Test_LCD_Controller_IC206",
+        0xFB7687: "Test_Video_RAM_IC207",
+        0xFFFEE5: "Get_Firmware_Version",
+    }
+
+    # Sorted by base_addr:
+    read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
+    read_jump_table(called_from=0xFDA068, base_addr=0xEE304C, num_entries=192)
+    read_jump_table(called_from=0xFDA254, base_addr=0xEE4F52, num_entries=24)  # FIXME: Not sure if the length is validated.
+                                                                               #        The 24 first entries seem reasonable, though. Potential overflow.
+
+    # a few other routines with no limit checking, for the same jump table:
+    read_jump_table(called_from=0xFDA09F, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA0D3, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA107, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA13B, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA16F, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA1A3, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA1E9, base_addr=0xEE4F52, num_entries=0)
+    read_jump_table(called_from=0xFDA7F5, base_addr=0xEE4F52, num_entries=0)
+
+    read_jump_table(called_from=0xFDDEDA, base_addr=0xEE8CF4, num_entries=32)    # Code does not seem to check limits of this table.
+                                                                                 # Also, it forbids address 0xFDECEF even though it
+                                                                                 # is not present in the table.
+    read_jump_table(called_from=0xFDE007, base_addr=0xEE8CF4, num_entries=32)  # This routine seems to be able to index up to 256 without checking limits :-O
+                                                                               # Potential overflow to run arbitrary code in low-RAM addresses
+                                                                               # if variable 0x8D34 is ever set to more than 0x1F
+    read_jump_table(called_from=0xEF0D64, base_addr=0xEF0D64, num_entries=3)
+    read_jump_table(called_from=0xEF0DA5, base_addr=0xEF0DA5, num_entries=16)
+    read_jump_table(called_from=0xEF3638, base_addr=0xEFA361, num_entries=5)
+    read_jump_table(called_from=0xEFA35C, base_addr=0xEFA361, num_entries=5)
+    read_jump_table(called_from=0xFE8C34, base_addr=0xEEAE04, num_entries=16)  # Code does not seem to check limits of this table.
+    read_jump_table(called_from=0xEF05C2, base_addr=0xFC3E65, num_entries=1)  # A single entry ?! (looks like a longer, 4-entries table)
+    read_jump_table(called_from=0xFC44EC, base_addr=0xFC4489, num_entries=0)  # FIXME: indexed by variable at 0x8D8A
+                                                                              # unknown table-length (maybe 128 entries?), potential overflow
+    read_jump_table(called_from=0xFC44CA, base_addr=0xFC4489, num_entries=11)
+    read_jump_table(called_from=0xFC4963, base_addr=0xFC4965, num_entries=8)
+    read_jump_table(called_from=0xFCADA0, base_addr=0xFCADA3, num_entries=8)  # Note: fcb40b, fcadc3, fcb001, fcadd4, fcb44e
+    read_jump_table(called_from=0xFCB46E, base_addr=0xFCB46F, num_entries=8)
+    read_jump_table(called_from=0xFCB6F9, base_addr=0xFCB6F9, num_entries=4)
+    read_jump_table(called_from=0xFCF760, base_addr=0xFCF761, num_entries=8)
+    read_jump_table(called_from=0xFD058A, base_addr=0xFD175E, num_entries=192)
+
+    register_jump_table_addresses(called_from=0xFAA49B, addresses=[0xF6A95E,   # TODO: review this.
+                                                                   0xF6A975,   # There may be more routines that call
+                                                                   0xF6A98C])  # this one providing different addresses.
+
+    # Sorted by offsets_addr:
+    read_jump_table_16bit_offsets(called_from=0xEF4784, base_addr=0xEF4784, offsets_addr=0xE00178, num_entries=8)
+    read_jump_table_16bit_offsets(called_from=0xF46524, base_addr=0xF46524, offsets_addr=0xE44A42, num_entries=8)
+    read_jump_table_16bit_offsets(called_from=0xF4677E, base_addr=0xF4677E, offsets_addr=0xE44A52, num_entries=11)
+    read_jump_table_16bit_offsets(called_from=0xF4670F, base_addr=0xF4670F, offsets_addr=0xE44A6A, num_entries=15)
+    read_jump_table_16bit_offsets(called_from=0xF96DD6, base_addr=0xF96DD6, offsets_addr=0xEA98B2, num_entries=12)
+    read_jump_table_16bit_offsets(called_from=0xFE137D, base_addr=0xFE137D, offsets_addr=0xEE8F06, num_entries=14)
+    read_jump_table_16bit_offsets(called_from=0xFEEB06, base_addr=0xFEEB06, offsets_addr=0xEED3C6, num_entries=6)
+    read_jump_table_16bit_offsets(called_from=0xFEEB97, base_addr=0xFEEB97, offsets_addr=0xEED3D2, num_entries=6)
+    # TODO: called_from=0xFB15DE (routine starts at 0xFB15C9).  This one reads the offsets_addr from stack
+    #       and I was not yet able to find which code calls this routine in order to see what can be placed on the stack.
+
+    read_some_symbols(0x0d72e)
+    read_some_symbols(0x16284)
+    read_some_symbols(0x1CA6E)
+    read_some_symbols(0x1F0EC)
+    read_some_symbols(0x1FD2C)
+    read_some_symbols(0x20260)
+    read_some_symbols(0x25042)
+    read_some_symbols(0x26804)
+    read_some_symbols(0x3051C)
+    read_some_symbols(0x55210)
+    read_some_symbols(0x55DAE)
+    read_some_symbols(0x5AD8C)
+    read_some_symbols(0x8070A)
+    read_some_symbols(0x814F4)
+    read_some_symbols(0x86638)
+    read_some_symbols(0xA0A56)
+    read_some_symbols(0xA135A)
+    read_some_symbols(0xA7FCE)
+    read_some_symbols(0xAB2B4)
+    read_some_symbols(0xAFA6E)
+    read_some_symbols(0xB3698)
+    read_some_symbols(0xD1C9E)
+    read_some_symbols(0xD2F66)
+    read_some_symbols(0xD3292)
+
+    # Experimental: read_n_symbols(0xAEBB2, 0xBC)
+
+    ## register_jump_table_addresses(called_from=None, addresses=[0xF6EFEC])
+    ## trying to find who calls the save-user-settings-to-floppy backup routine.
+    ## TODO: Study routine LABEL_F6E7F8
+
+    # These 19 base_addresses are in a list at 0xEE8C7E:
+    for b in [0xEF1235, 0xEED52B, 0xE1FFB6, 0xFCF962,
+              0xEE2F26, 0xEE1574, 0xEDB2E4, 0xEA066C,
+              0xEB7932, 0xEDA02C, 0xED9D1E, 0xEED3DE,
+              0xE44636, 0xF532A1, 0xF6F068, 0xF5E907,
+              0xEED57D, 0xE9FCE2, 0xEEC288]:
+        read_jump_table(called_from=0xFDDB79, base_addr=b, num_entries=4) # Among all invokations of routine at LABEL_FDDB46,
+                                                                          # the only values passed via WA register are 0,1,2 or 3.
+                                                                          # So, this means each of these small jump-tables have exactly 4 entries.
+
+    # Experimental:
+    # read_some_table(0xEAC9EE)
+
+
+
+rom.close()
+sys.exit()
+
+for pointer, label in KNOWN_LABELS.items():
+    if pointer not in entry_points:
+        entry_points.append(pointer)
 
 # TODO: use jump_table_from on the ExecTrace class
 #       to not report jump tables that were already documented
