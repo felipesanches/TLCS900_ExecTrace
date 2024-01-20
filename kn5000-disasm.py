@@ -14,23 +14,21 @@ if not (len(sys.argv) == 2):
 
 
 rom_file = sys.argv[1]
-disasm_dir = f"output"
-
 disasm_version10 = True
 
 POSSIBLY_UNUSED_CODEBLOCKS = {}
 KNOWN_LABELS = {}
 
+parse_interrupt_table = True
 RELOCATION_BLOCKS = (
     # physical,  logical, length 
     (0x000000,  0xe00000, 0x200000),
 )
 
-rom = open(rom_file, "rb")
 entry_points = []
 jump_table_from = []
 
-
+rom = open(rom_file, "rb")
 
 def read_n_symbols(base_addr, num_symbols):
     global entry_points
@@ -82,9 +80,9 @@ def read_n_symbols(base_addr, num_symbols):
             entry_points.append(routine_addresses[i])
 
 
-def read_some_symbols(base_addr):
+def read_some_symbols(base_addr, prefix="table"):
     global entry_points
-    print(f"Reading some symbols from address {base_addr}...")
+    print(f"Reading some symbols from address 0x{base_addr:08X}...")
     rom.seek(base_addr)
     pointers = []
     address = -1
@@ -137,7 +135,7 @@ def read_some_symbols(base_addr):
 
     symbol_names = list(reversed(symbol_names))
     for i in range(num_symbols):
-        print(f"{pointers[i]:06X} / {other_pointers[i]:06X}: {symbol_names[i]}")
+        print(f"Func {prefix}[{4*i:04X}]: {pointers[i]:06X} / {other_pointers[i]:06X} - {symbol_names[i]}")
 
         KNOWN_LABELS[pointers[i]] = symbol_names[i]
         if pointers[i] not in entry_points:
@@ -298,6 +296,8 @@ if disasm_version10:
         0xEF04A1: "DRAM_related_short_pause",
         0xEF04AC: "DRAM_related_short_pause_2",
         0xEF0536: "We_seem_to_be_running_boot_ROM_code",
+        0xEF083E: "Detect_Area_Region_Code",
+        0xEF0865: "Get_Area_Region_Code",
         0xEF0B46: "Seems_to_copy_some_data_buffers",
         0xEF18D7: "Copy_DE_words_from_XBC_to_XWA",
         0xEF18E0: "Fill_memory_at_XWA_with_DE_words_of_BC_value",
@@ -385,7 +385,7 @@ if disasm_version10:
     read_some_symbols(0x0d72e)
     read_some_symbols(0x16284)
     read_some_symbols(0x1CA6E)
-    read_some_symbols(0x1F0EC)
+    read_some_symbols(0x1F0EC, "0xE88") # <-- These are the "0xE88-table" routines also called by HD-AE5000 ROM. See details below. 
     read_some_symbols(0x1FD2C)
     read_some_symbols(0x20260)
     read_some_symbols(0x25042)
@@ -401,7 +401,18 @@ if disasm_version10:
     read_some_symbols(0xA135A)
     read_some_symbols(0xA7FCE)
     read_some_symbols(0xAB2B4)
-    read_some_symbols(0xAFA6E)
+    read_some_symbols(0xAFA6E, "0xE0A") # <-- There are the "0xE0A-table" routines.
+                               # 
+                               # These functions are used by the HD-AE5000 ROM
+                               # The table is copied to SRAM and then used like this:
+                               # 	LD XWA (0x23D2DE)
+                               # 	LD XWA (XWA + 0x0e0a)  <--- 0x0e0a is the offset within the data block copied to SRAM that corresponds to the array of func pointers 
+                               # 	LD XHL (XWA + 0x00e4)  <--- 0xe4 here is the index. Get the Nth function pointer by passing 4*N here.
+                               # 	LD WA, 0x01ea  <--- some parameter for the function call
+                               # 	CALL T XHL
+                               #
+                               # Function number 0xE4, for instance, is "RegisterObjectTable"
+
     read_some_symbols(0xB3698)
     read_some_symbols(0xD1C9E)
     read_some_symbols(0xD2F66)
@@ -429,11 +440,27 @@ if disasm_version10:
 
 
 rom.close()
-sys.exit()
 
+# These are manually detected routines (or subroutines) found while looking for calls
+# to Get_Firmware_Version, investigating how the SOFT_VERSION screen is drawn
+# so that we may figure out where the internal version numbers of
+# MAIN PROGRAM, MAIN TABLE, SUB PROGRAM and SOUND TABLE are stored.
+# By finding that we may also figure out where the SUBCPU program code may be stored.
+
+if disasm_version10:
+    MANUALLY_FOUND = [
+        0xF5E985,
+    ]
+    for pointer in MANUALLY_FOUND:
+        if pointer not in entry_points:
+            entry_points.append(pointer)
+
+
+# These are the ones to which we already attibuted meaningful routine names:
 for pointer, label in KNOWN_LABELS.items():
     if pointer not in entry_points:
         entry_points.append(pointer)
+
 
 # TODO: use jump_table_from on the ExecTrace class
 #       to not report jump tables that were already documented
@@ -445,7 +472,10 @@ trace = TLCS900H_Trace(rom_file,
                        loglevel=0)
 trace.jump_table_from = jump_table_from
 trace.count_warns = 0
-trace.load_interrupt_vector()
+
+if parse_interrupt_table:
+    trace.load_interrupt_vector()
+
 trace.run(entry_points)
 for ep in entry_points:
     trace.register_label(ep)
@@ -453,10 +483,11 @@ for ep in entry_points:
 #trace.print_grouped_ranges()
 
 total = len(jump_table_from) + trace.count_warns
-progress = len(jump_table_from) / total
-print(f"Inspected {len(jump_table_from)} documented jump tables emitting {trace.count_warns} warnings.")
-print(f"There are at least {len(jump_table_from) + trace.count_warns} jump tables.")
-print(f"Current documentation progress: {100*progress:.2f}%")
+if total > 0:
+    progress = len(jump_table_from) / total
+    print(f"Inspected {len(jump_table_from)} documented jump tables emitting {trace.count_warns} warnings.")
+    print(f"There are at least {len(jump_table_from) + trace.count_warns} jump tables.")
+    print(f"Current documentation progress: {100*progress:.2f}%")
 
 trace.save_disassembly_listing(f"{rom_file}.asm")
 

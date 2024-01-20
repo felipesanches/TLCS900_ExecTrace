@@ -1476,10 +1476,11 @@ class TLCS900H_Trace(ExecTrace):
                 self.conditional_branch(address)
                 return " " + self.getLabelName(address)
             elif dasm[MNEMONIC] == "JR":
-                if self.condition == "T":
-                   self.unconditional_jump(address)
-                elif self.condition != "F":
-                   self.conditional_branch(address)
+                #if self.condition == "T":
+                #   self.unconditional_jump(address)
+                #elif self.condition != "F":
+                #   self.conditional_branch(address)
+                self.conditional_branch(address)
                 return " " + self.getLabelName(address)
             else:
                 return " 0x%06x" % (address)
@@ -1494,10 +1495,11 @@ class TLCS900H_Trace(ExecTrace):
                 self.subroutine(address)
                 return " " + self.getLabelName(address)
             elif dasm[MNEMONIC] == "JRL":
-                if self.condition == "T":
-                   self.unconditional_jump(address)
-                elif self.condition != "F":
-                   self.conditional_branch(address)
+                #if self.condition == "T":
+                #   self.unconditional_jump(address)
+                #elif self.condition != "F":
+                #   self.conditional_branch(address)
+                self.conditional_branch(address)
                 return " " + self.getLabelName(address)
             else:
                 return " 0x%06x" % (address)
@@ -1547,7 +1549,8 @@ class TLCS900H_Trace(ExecTrace):
             return ", 0x%08x" % imm
 
         elif operand == "O_M":
-            if dasm[MNEMONIC] == "CALL" and self.condition != "F":
+#            if dasm[MNEMONIC] == "CALL" and self.condition != "F":
+            if dasm[MNEMONIC] == "CALL":
                 if isinstance(value, int):
                     self.subroutine(value)
                     return " " + self.getLabelName(value)
@@ -1558,13 +1561,14 @@ class TLCS900H_Trace(ExecTrace):
                     return f" {value}"
             if dasm[MNEMONIC] == "JP":
                 if isinstance(value, int):
-                    if self.condition == "T":
-                       self.unconditional_jump(value)
-                    elif self.condition == "F":
-                       print(f"IS THIS A BUG? Please review:"
-                             f" At {self.PC:08X}:  JP F {value:08X}")
-                    else:
-                       self.conditional_branch(value)
+                    #if self.condition == "T":
+                    #   self.unconditional_jump(value)
+                    #elif self.condition == "F":
+                    #   print(f"IS THIS A BUG? Please review:"
+                    #         f" At {self.PC:08X}:  JP F {value:08X}")
+                    #else:
+                    #   self.conditional_branch(value)
+                    self.conditional_branch(value)
                     return " " + self.getLabelName(value)
                 else:
                     if self.PC not in self.jump_table_from:
