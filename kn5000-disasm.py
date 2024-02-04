@@ -308,6 +308,14 @@ if disasm_version10:
         0xEF5141: "Write_VGA_Register",
         0xEF5157: "Read_VGA_Register",
         0xEF55A7: "Some_VGA_setup",
+
+        0xF5E985: "Not_sure_maybe_SOFT_VERSION_related_F5E985",
+        # Thwas found while looking for calls
+        # to Get_Firmware_Version, investigating how the SOFT_VERSION screen is drawn
+        # so that we may figure out where the internal version numbers of
+        # MAIN PROGRAM, MAIN TABLE, SUB PROGRAM and SOUND TABLE are stored.
+        # By finding that we may also figure out where the SUBCPU program code may be stored.
+
         0xF74942: "Draw_keybed_maybe_for_indicating_split_point",
         0xF98001: "Check_for_Floppy_Disk_Change",
         0xF98009: "Detected_Floppy_Disk_Change",
@@ -325,8 +333,12 @@ if disasm_version10:
         0xFB75D4: "Test_Custom_data_ROM_IC19",
         0xFB763A: "Test_LCD_Controller_IC206",
         0xFB7687: "Test_Video_RAM_IC207",
+        0xFD770D: "Some_SysEx_send_routine_FD770D",
+        0xFD7A59: "Maybe_SysEx_receive_routines_FD7A59",
         0xFFFEE5: "Get_Firmware_Version",
     }
+    
+    
 
     # Sorted by base_addr:
     read_jump_table(called_from=0xFCD4ED, base_addr=0xEE10D0, num_entries=8)
@@ -440,20 +452,6 @@ if disasm_version10:
 
 
 rom.close()
-
-# These are manually detected routines (or subroutines) found while looking for calls
-# to Get_Firmware_Version, investigating how the SOFT_VERSION screen is drawn
-# so that we may figure out where the internal version numbers of
-# MAIN PROGRAM, MAIN TABLE, SUB PROGRAM and SOUND TABLE are stored.
-# By finding that we may also figure out where the SUBCPU program code may be stored.
-
-if disasm_version10:
-    MANUALLY_FOUND = [
-        0xF5E985,
-    ]
-    for pointer in MANUALLY_FOUND:
-        if pointer not in entry_points:
-            entry_points.append(pointer)
 
 
 # These are the ones to which we already attibuted meaningful routine names:
