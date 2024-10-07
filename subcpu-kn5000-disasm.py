@@ -427,6 +427,10 @@ entry_points = [
 0x03ED64
 ]
 
+entry_points = [
+	0x000400 + 5*i for i in range(45)
+]
+
 # These are the ones to which we already attibuted meaningful routine names:
 for pointer, label in KNOWN_LABELS.items():
     if pointer not in entry_points:
